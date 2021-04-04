@@ -356,4 +356,12 @@ function saveSvg() {
     console.log("saveSvg");
 }
 
+function saveJson(){
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(consolidated_data));
+    var dlAnchorElem = document.getElementById('downloadAnchorElem');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "consolidated_data.json");
+    dlAnchorElem.click();
+}
+
 //   .filter(time => data.nodes.some(d => contains(d, time)))
