@@ -1,6 +1,6 @@
 const svg = d3.select("svg");
-let width = 1000;//+svg.node().getBoundingClientRect().width;
-let height = 600;//+svg.node().getBoundingClientRect().height;
+let width = 1000; //+svg.node().getBoundingClientRect().width;
+let height = 600; //+svg.node().getBoundingClientRect().height;
 
 // svg objects
 // let link;
@@ -48,29 +48,29 @@ forceProperties = {
 const simulation = d3.forceSimulation();
 
 // set up the simulation and event to update locations after each tick
-function initializeSimulation() {
-    simulation.nodes(consolidated_data.nodes);
-    initializeForces();
+function initializeSimulation(data_nodes, data_links) {
+    simulation.nodes(data_nodes);
+    initializeForces(data_nodes, data_links);
     simulation.alpha(2).restart();
     simulation.on("tick", ticked);
 }
 
 // add forces to the simulation
-function initializeForces() {
+function initializeForces(data_nodes, data_links) {
     // add forces and associate each with a name
     simulation
+        .force("center", d3.forceCenter())
         .force("link", d3.forceLink())
         .force("charge", d3.forceManyBody())
         .force("collide", d3.forceCollide())
-        .force("center", d3.forceCenter())
         .force("forceX", d3.forceX())
         .force("forceY", d3.forceY());
     // apply properties to each of the forces
-    updateForces();
+    updateForces(data_links);
 }
 
 // apply new force properties
-function updateForces() {
+function updateForces(data_links) {
     // get each force by name and update the properties
     simulation.force("center")
         .x(width * forceProperties.center.x)
@@ -93,11 +93,12 @@ function updateForces() {
         .id(function (d) { return d.id; })
         .distance(forceProperties.link.distance)
         .iterations(forceProperties.link.iterations)
-        .links(forceProperties.link.enabled ? consolidated_data.links : []);
+        .links(forceProperties.link.enabled ? data_links : []);
 
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
-    simulation.alpha(2).restart();
+    // simulation.alpha(2).restart();
+    simulation.alpha(0.2).restart();
 }
 
 //////////// DISPLAY ////////////
@@ -105,25 +106,39 @@ function updateForces() {
 // color = d3.scaleOrdinal(d3.schemeCategory10);
 
 // generate the svg objects and force simulation
-function buildGraph() {
+function buildGraph(data_nodes, data_links) {
     simulation.stop();
     d3.select("svg")
         .style("width", width + 'px')
         .style("height", height + 'px')
-
-    svg.attr("viewBox", [0, 0, width, height]);
+        .attr("viewBox", [0, 0, width, height]);
 
     const color = d3.scaleOrdinal()
-        .domain(["projetos", "mapas", "ferramentas", "questões", "respostas"])
-        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]);
+        .domain(["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo"])
+        // .domain(["deacordo", "respostas", "comentários", "questões", "ferramentas", "mapas", "projetos"])
+        // .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]);
+        // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
+        // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
+        // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
+        // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
+        // .range(d3.schemeCategory10);
+        // .range(d3.schemePaired);
+        // .range(d3.schemeTableau10);
+        .range(d3.schemeSet1);
+    // .range(["#0d0887","#5c01a6","#9c179e","#cc4778","#ed7953","#fdb42f","#f0f921"]);
+    // .range(["#eff3ff","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]);
+
+    const node_size = d3.scaleOrdinal()
+        .domain(["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo"])
+        .range([10, 9, 8, 7, 5, 4, 3]);
 
     let nodes_selection = d3.select('svg')
         .selectAll("g.nodes")
-        .data(consolidated_data.nodes, d => d.id);
+        .data(data_nodes, d => d.id);
 
     let links_selection = d3.select('svg')
         .selectAll("line.links")
-        .data(consolidated_data.links);
+        .data(data_links);
 
     // set the data and properties of link lines
     links_selection
@@ -140,27 +155,17 @@ function buildGraph() {
     let base_size = 3;
 
     let t = d3.transition()
-        .duration(1000)
+        .duration(500)
         .ease(d3.easeLinear);
 
     let node_circle = node_group
         .append("circle")
+        // .attr("stroke", "#fff")
+        // .attr("stroke-width", 1.5)
         .attr("fill", "white")
         .attr("r", 0)
         .transition(t)
-        .attr("r", function (d) {
-            if (d.group == "projetos") {
-                return base_size + 7;
-            } else if (d.group == "mapas") {
-                return base_size + 6;
-            } else if (d.group == "ferramentas") {
-                return base_size + 5;
-            } else if (d.group == "questões") {
-                return base_size + 4;
-            } else {
-                return base_size + 2;
-            }
-        })
+        .attr("r", function (d) { return node_size(d.group); })
         .attr("fill", function (d) { return color(d.group); });
 
     node_group
@@ -263,16 +268,80 @@ function unfocus(d) {
 d3.select(window).on("resize", function () {
     width = +svg.node().getBoundingClientRect().width;
     height = +svg.node().getBoundingClientRect().height;
-    updateForces();
+    updateForces(consolidated_data.links);
 });
 
 d3.select(window).on("load", function () {
 
 });
 
-function updateAll() {
-    updateForces();
+function updateAll(data_links) {
+    updateForces(data_links);
     updateDisplay();
 }
 
+function myCheckBox(checked) {
+    // forceProperties.link.enabled = checked;
+    let filteredNodes = consolidated_data.nodes;
+    if (checked) {
+        filteredNodes = consolidated_data.nodes.filter((d) => { return d.group == "mapas" });
+    }
+    let filteredLinks = consolidated_data.links;
+    buildGraph(filteredNodes, filteredLinks);
+    updateAll(consolidated_data.links);
+    console.log(consolidated_data);
+}
 
+// function debug() {
+//     const created_at = new Date("2021-03-10T10:54:18.225");
+//     const created_at2 = new Date("2021-03-10T10:54:18.225");
+//     let parsedTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
+//     console.log(parsedTime(created_at) == parsedTime(created_at2));
+//     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(consolidated_data));
+//     var dlAnchorElem = document.getElementById('downloadAnchorElem');
+//     dlAnchorElem.setAttribute("href", dataStr);
+//     dlAnchorElem.setAttribute("download", "scene.json");
+//     dlAnchorElem.click();
+// }
+
+function debug(value) {
+    // console.log(d3.select("#time_ticks").value());
+    // console.log(value);
+
+    let parseTime = d3.timeFormat("%d/%m/%Y - %H:%M:%S");
+
+    // let arrayDates = [];
+
+    // consolidated_data.nodes.forEach(element => {
+    //     if(element.created_at != undefined){
+    //         arrayDates.push(element.created_at);
+    //     }
+    // });
+
+    // console.log(arrayDates);
+
+    let times = d3.scaleTime().domain([0, 50])
+        //   .range(new Set(arrayDates.sort()));
+        .range([d3.min(consolidated_data.nodes, d => d.created_at), d3.max(consolidated_data.nodes, d => d.created_at)]);
+    console.log(times(value));
+    let date_limit = times(value);
+    let filteredNodes = consolidated_data.nodes.filter((d) => { return d.created_at <= date_limit });
+    let filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+    d3.select("#choose_date").text(parseTime(date_limit))
+    buildGraph(filteredNodes, filteredLinks);
+    updateAll(filteredLinks);
+
+    function nodes_contains(link, nodes) {
+        let source = link.source.id;
+        let target = link.target.id;
+        for (let index = 0; index < nodes.length; index++) {
+            const node_id = nodes[index].id;
+            if (node_id == target) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+//   .filter(time => data.nodes.some(d => contains(d, time)))
