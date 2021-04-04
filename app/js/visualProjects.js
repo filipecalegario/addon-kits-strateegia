@@ -1,6 +1,15 @@
 const svg = d3.select("svg");
 let width = 1000; //+svg.node().getBoundingClientRect().width;
 let height = 600; //+svg.node().getBoundingClientRect().height;
+const g = svg.append("g");
+svg.call(d3.zoom()
+    .extent([[0, 0], [width, height]])
+    .scaleExtent([0.3, 8])
+    .on("zoom", zoomed));
+
+function zoomed({ transform }) {
+    g.attr("transform", transform);
+}
 
 // svg objects
 // let link;
@@ -108,8 +117,7 @@ function updateForces(data_links) {
 // generate the svg objects and force simulation
 function buildGraph(data_nodes, data_links) {
     simulation.stop();
-    d3.select("svg")
-        .style("width", width + 'px')
+    svg.style("width", width + 'px')
         .style("height", height + 'px')
         .attr("viewBox", [0, 0, width, height]);
 
@@ -132,11 +140,11 @@ function buildGraph(data_nodes, data_links) {
         .domain(["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo"])
         .range([10, 9, 8, 7, 5, 4, 3]);
 
-    let nodes_selection = d3.select('svg')
+    let nodes_selection = g
         .selectAll("g.nodes")
         .data(data_nodes, d => d.id);
 
-    let links_selection = d3.select('svg')
+    let links_selection = g
         .selectAll("line.links")
         .data(data_links);
 
@@ -342,6 +350,10 @@ function debug(value) {
         }
         return false;
     }
+}
+
+function saveSvg() {
+    console.log("saveSvg");
 }
 
 //   .filter(time => data.nodes.some(d => contains(d, time)))
