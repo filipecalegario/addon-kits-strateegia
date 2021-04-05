@@ -69,6 +69,13 @@ function drawProject(projectId) {
         if (project.missions.length > 1) {
             addNode(project.id, project.title, "projetos", project.created_at);
         }
+        // addNode(`${project.id}_1`, "Usuários", "grupo_usuários", undefined);
+        // addNode("grupo_usuários", "Usuários", "grupo_usuários", undefined);
+        for (let index = 0; index < project.users.length; index++) {
+            const user = project.users[index];
+            //addNode(user.id, user.name, "usuários", undefined);
+            //addLink("grupo_usuários", user.id);
+        }
         for (let a = 0; a < project.missions.length; a++) {
             const currentMission = project.missions[a];
             let missionId = project.missions[a].id;
@@ -115,9 +122,11 @@ function drawProject(projectId) {
                                 const commentId = arrayComments[k].id;
                                 const commentText = arrayComments[k].text;
                                 const commentCreatedAt = arrayComments[k].created_at;
+                                const commentCreatedBy = arrayComments[k].created_by;
                                 // console.log(commentText);
                                 addNode(commentId, commentText, "comentários", commentCreatedAt);
                                 addLink(questionId_graph, commentId);
+                                // addLink(commentCreatedBy, commentId);
                             }
                         }).then(d => {
                             buildGraph(consolidated_data.nodes, consolidated_data.links);

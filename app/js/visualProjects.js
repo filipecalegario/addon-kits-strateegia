@@ -30,7 +30,7 @@ forceProperties = {
     },
     collide: {
         enabled: false,
-        strength: .7,
+        strength: .01,
         iterations: 10,
         radius: 10
     },
@@ -116,29 +116,30 @@ function updateForces(data_links) {
 
 // generate the svg objects and force simulation
 function buildGraph(data_nodes, data_links) {
+    let categorias = ["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo", "usuários", "grupo_usuários"];
     simulation.stop();
     svg.style("width", width + 'px')
         .style("height", height + 'px')
         .attr("viewBox", [0, 0, width, height]);
 
     const color = d3.scaleOrdinal()
-        .domain(["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo"])
+        .domain(categorias)
         // .domain(["deacordo", "respostas", "comentários", "questões", "ferramentas", "mapas", "projetos"])
         // .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]);
         // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
         // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
         // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
         // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
-        // .range(d3.schemeCategory10);
+        .range(d3.schemeCategory10);
         // .range(d3.schemePaired);
         // .range(d3.schemeTableau10);
-        .range(d3.schemeSet1);
+        // .range(d3.schemeSet1);
     // .range(["#0d0887","#5c01a6","#9c179e","#cc4778","#ed7953","#fdb42f","#f0f921"]);
     // .range(["#eff3ff","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]);
 
     const node_size = d3.scaleOrdinal()
-        .domain(["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo"])
-        .range([10, 9, 8, 7, 5, 4, 3]);
+        .domain(categorias)
+        .range([10, 9, 8, 7, 5, 4, 3, 7, 10]);
 
     let nodes_selection = g
         .selectAll("g.nodes")
@@ -280,7 +281,7 @@ d3.select(window).on("resize", function () {
 });
 
 d3.select(window).on("load", function () {
-
+    // d3.select("#filter-users").attr("checked", "true");
 });
 
 function updateAll(data_links) {
@@ -352,6 +353,7 @@ function debug(value) {
     }
 }
 
+
 function saveSvg() {
     console.log("saveSvg");
 }
@@ -362,6 +364,32 @@ function saveJson(){
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "consolidated_data.json");
     dlAnchorElem.click();
+}
+
+function filterUsers(checked){
+    let filteredNodes = consolidated_data.nodes;
+    let filteredLinks = consolidated_data.links
+    if(checked){
+        filteredNodes = consolidated_data.nodes.filter((d) => { return (d.group == "usuários" || d.group == "grupo_usuários" || d.group == "comentários")});
+        filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+    } else {
+        filteredNodes = consolidated_data.nodes.filter((d) => { return (d.group != "usuários" && d.group != "grupo_usuários")});
+        filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+    }
+    buildGraph(filteredNodes, filteredLinks);
+    updateAll(filteredLinks);
+
+    function nodes_contains(link, nodes) {
+        let source = link.source.id;
+        let target = link.target.id;
+        for (let index = 0; index < nodes.length; index++) {
+            const node_id = nodes[index].id;
+            if (node_id == source) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 //   .filter(time => data.nodes.some(d => contains(d, time)))
