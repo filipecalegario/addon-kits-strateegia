@@ -125,12 +125,12 @@ function buildGraph(data_nodes, data_links) {
     const color = d3.scaleOrdinal()
         .domain(categorias)
         // .domain(["deacordo", "respostas", "comentários", "questões", "ferramentas", "mapas", "projetos"])
-        // .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]);
+        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#fdbf6f", "#ffff99", "#e31a1c", "#fb9a99"]);
         // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
         // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
         // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
         // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
-        .range(d3.schemeCategory10);
+        // .range(d3.schemeCategory10);
         // .range(d3.schemePaired);
         // .range(d3.schemeTableau10);
         // .range(d3.schemeSet1);
@@ -332,7 +332,7 @@ function debug(value) {
     let times = d3.scaleTime().domain([0, 50])
         //   .range(new Set(arrayDates.sort()));
         .range([d3.min(consolidated_data.nodes, d => d.created_at), d3.max(consolidated_data.nodes, d => d.created_at)]);
-    console.log(times(value));
+    // console.log(times(value));
     let date_limit = times(value);
     let filteredNodes = consolidated_data.nodes.filter((d) => { return d.created_at <= date_limit });
     let filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });

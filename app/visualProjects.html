@@ -25,22 +25,28 @@
         selecione abaixo o projeto que deseja visualizar
         <select class="form-select" aria-label="Default select example" id="projects-list">
         </select>
-        <label for="time_ticks" class="form-label" id="choose_date">Escolha o dia</label>
-        <input id="time_ticks" type="range" class="form-range" min="0" max="50" step="0.1" oninput="debug(this.value)" value="50">
+        
         <!-- <button type="button" class="btn btn-primary" onclick="saveJson()">Save JSON</button> -->
-        <div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="filter-users" onchange="filterUsers(this.checked)">
-            <label class="form-check-label" for="flexCheckDefault">
-              Filtrar Usuários
-            </label>
-          </div>
-          <!-- <label><input type="checkbox" onchange="filterUsers(this.value)">Filtrar Usuários</label> -->
-          <svg id="main_svg"></svg>
-          <a id="downloadAnchorElem" style="display:none"></a>
-        </div>
-        </span>
       </div>
+      <div class="container-fluid d-flex flex-wrap" id="projects-container">
+        -------------------------------------
+      </div>
+      <div class="container-fluid d-flex flex-wrap">
+        <label for="time_ticks" class="form-label" id="choose_date">deslize o slider abaixo para selecionar o dia</label>
+        <input id="time_ticks" type="range" class="form-range" min="0" max="50" step="0.1" oninput="debug(this.value)" value="50">
+      </div>
+      <div>
+        <!-- <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="filter-users" onchange="filterUsers(this.checked)">
+          <label class="form-check-label" for="flexCheckDefault">
+            Filtrar Usuários
+          </label>
+        </div> -->
+        <!-- <label><input type="checkbox" onchange="filterUsers(this.value)">Filtrar Usuários</label> -->
+        <svg id="main_svg"></svg>
+        <a id="downloadAnchorElem" style="display:none"></a>
+      </div>
+      
     </div>
   </div>
 
