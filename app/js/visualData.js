@@ -6,7 +6,7 @@ let consolidated_data = {
     "links": []
 }
 
-function addNode(id, title, group, created_at) {
+function addNode(id, title, group, created_at, parent_id) {
     let date = new Date(created_at)
     //let parseTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
     //let parsedDate = parseTime(date);
@@ -14,11 +14,16 @@ function addNode(id, title, group, created_at) {
         "id": id,
         "title": title,
         "group": group,
-        "created_at": date
+        "created_at": date,
+        "parent_id": parent_id
     });
 }
 
 function addLink(source, target) {
+    let target_node = consolidated_data["nodes"].find(x => x.id === target)
+    if(target_node != undefined){
+        target_node.parent_id = source;
+    }
     consolidated_data["links"].push({
         "source": source,
         "target": target
@@ -86,7 +91,7 @@ function drawProject(projectId) {
                 let missionTitle = map_response.title;
                 let missionCreatedAt = map_response.created_at;
                 let projectId = map_response.project_id;
-                addNode(mapId, missionTitle, "mapas", missionCreatedAt);
+                addNode(mapId, missionTitle, "mapas", missionCreatedAt, projectId);
                 if (project.missions.length > 1) {
                     addLink(projectId, mapId);
                 }
