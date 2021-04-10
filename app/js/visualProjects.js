@@ -116,7 +116,7 @@ function updateForces(data_links) {
 
 // generate the svg objects and force simulation
 function buildGraph(data_nodes, data_links) {
-    let categorias = ["projetos", "mapas", "ferramentas", "questões", "comentários", "respostas", "deacordo", "usuários", "grupo_usuários"];
+    let categorias = ["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"];
     simulation.stop();
     svg.style("width", width + 'px')
         .style("height", height + 'px')
@@ -169,7 +169,7 @@ function buildGraph(data_nodes, data_links) {
 
     let node_circle = node_group
         .append("a")
-        .attr("xlink:href", function (d) { return formatURL(d); })
+        .attr("xlink:href", function (d) { return d.dashboard_url; })
         .attr("target","_blank")
         .append("circle")
         // .attr("stroke", "#fff")
@@ -210,18 +210,6 @@ function buildGraph(data_nodes, data_links) {
 
     // visualize the data
     updateDisplay();
-}
-
-function formatURL(datum){
-    let url = "http://www.google.com";
-    //https://app.strateegia.digital/dashboard/project/60566d3cefa450463f4bf807/mission/60566e299a8fce28bbd6e941/content/60566f5edb0cf915c578cb40
-    if(datum.group == "mapas"){
-        let project = datum.parent_id;
-        let mission = datum.id;
-        let content = "";
-        url = `https://app.strateegia.digital/dashboard/project/${project}/mission/${mission}`
-    }
-    return url;
 }
 
 // update the display based on the forces (but not positions)

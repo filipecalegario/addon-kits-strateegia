@@ -6,7 +6,7 @@ let consolidated_data = {
     "links": []
 }
 
-function addNode(id, title, group, created_at, parent_id) {
+function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
     //let parseTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
     //let parsedDate = parseTime(date);
@@ -15,7 +15,7 @@ function addNode(id, title, group, created_at, parent_id) {
         "title": title,
         "group": group,
         "created_at": date,
-        "parent_id": parent_id
+        "dashboard_url": dashboard_url
     });
 }
 
@@ -30,39 +30,8 @@ function addLink(source, target) {
     });
 }
 
-let inter_data;
-
-// async function getAllProjects(){
-//     const projects = await getAllProjects(access_token);
-
-//     return await projects;
-// }
-
-// getAllProjects(access_token).then(
-//     labs => {
-//         console.log(labs);
-//         let markup = ``;
-//         for (let i = 0; i < labs.length; i++) {
-//             const currentLab = labs[i];
-//             console.log(currentLab);
-//             for (let j = 0; j < currentLab.projects.length; j++) {
-//                 const project = currentLab.projects[j];
-//                 console.log(`${currentLab.lab.name} -> ${project.title}`);
-//                 markup += `<div class="card" style="width: 18rem;">
-//           <div class="card-body">
-//             <h5 class="card-title">${project.title}</h5>
-//             <h6 class="card-subtitle mb-2 text-muted">${currentLab.lab.name}</h6>
-//             <p class="card-text">${project.title}</p>
-//             <a class="btn btn-primary btnAbrir" id="${project.id
-//                     }" style="background-color: #5A5B9E;border-color: #5A5B9E;width: 100%;">Abrir</a>
-//           </div>
-//         </div>`;
-//             }
-//         }
-//         addMarkup(markup, labs);
-//     });
-
 function drawProject(projectId) {
+
     // console.log(projectId);
     consolidated_data = {
         "nodes": [],
@@ -72,28 +41,28 @@ function drawProject(projectId) {
         console.log("getProjectById()")
         console.log(project);
         if (project.missions.length > 1) {
-            addNode(project.id, project.title, "projetos", project.created_at);
+            addNode(projectId, project.title, "project", project.created_at, `https://app.strateegia.digital/dashboard/project/${projectId}`);
         }
-        // addNode(`${project.id}_1`, "Usuários", "grupo_usuários", undefined);
-        // addNode("grupo_usuários", "Usuários", "grupo_usuários", undefined);
+        // addNode("users", "Usuários", "users");
         for (let index = 0; index < project.users.length; index++) {
             const user = project.users[index];
-            //addNode(user.id, user.name, "usuários", undefined);
-            //addLink("grupo_usuários", user.id);
+            // addNode(user.id, user.name, "user");
+            // addLink("users", user.id);
         }
         for (let a = 0; a < project.missions.length; a++) {
             const currentMission = project.missions[a];
-            let missionId = project.missions[a].id;
+            const missionId = project.missions[a].id;
             getMapById(access_token, missionId).then(map_response => {
                 console.log("getMapById()");
                 console.log(map_response);
-                let mapId = map_response.id;
-                let missionTitle = map_response.title;
-                let missionCreatedAt = map_response.created_at;
-                let projectId = map_response.project_id;
-                addNode(mapId, missionTitle, "mapas", missionCreatedAt, projectId);
+                const missionId = map_response.id;
+                const missionTitle = map_response.title;
+                const missionCreatedAt = map_response.created_at;
+                const projectId = map_response.project_id;
+                const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}`;
+                addNode(missionId, missionTitle, "map", missionCreatedAt, dashboard_url);
                 if (project.missions.length > 1) {
-                    addLink(projectId, mapId);
+                    addLink(projectId, missionId);
                 }
             });
             // console.log(missionId + " -> " + missionTitle);
@@ -108,7 +77,8 @@ function drawProject(projectId) {
                     const kitId = arrayContents[i].kit.id;
                     const kitTitle = arrayContents[i].kit.title;
                     const kitCreatedAt = arrayContents[i].kit.created_at;
-                    addNode(contentId, kitTitle, "ferramentas", contentCreatedAt);
+                    const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}/content/${contentId}`
+                    addNode(contentId, kitTitle, "kit", contentCreatedAt, dashboard_url);
                     addLink(missionId, contentId);
                     const arrayQuestions = arrayContents[i].kit.questions;
                     for (let j = 0; j < arrayQuestions.length; j++) {
@@ -116,7 +86,7 @@ function drawProject(projectId) {
                         const questionId_graph = `${arrayQuestions[j].id}.${contentId}`;
                         const questionText = arrayQuestions[j].question;
                         const questionCreatedAt = arrayQuestions[j].created_at;
-                        addNode(questionId_graph, questionText, "questões", contentCreatedAt);
+                        addNode(questionId_graph, questionText, "question", contentCreatedAt, dashboard_url);
                         addLink(contentId, questionId_graph);
                         getParentComments(access_token, contentId, questionId).then(response => {
                             console.log("getParentComments()")
@@ -129,9 +99,9 @@ function drawProject(projectId) {
                                 const commentCreatedAt = arrayComments[k].created_at;
                                 const commentCreatedBy = arrayComments[k].created_by;
                                 // console.log(commentText);
-                                addNode(commentId, commentText, "comentários", commentCreatedAt);
+                                addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
                                 addLink(questionId_graph, commentId);
-                                // addLink(commentCreatedBy, commentId);
+                                //addLink(commentCreatedBy, commentId);
                             }
                         }).then(d => {
                             buildGraph(consolidated_data.nodes, consolidated_data.links);
@@ -144,6 +114,8 @@ function drawProject(projectId) {
         }
     });
 }
+
+
 
 getAllProjects(access_token).then(labs => {
     console.log("getAllProjects()");
