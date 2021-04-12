@@ -95,8 +95,14 @@ function drawProject(projectId) {
                         const questionCreatedAt = arrayQuestions[j].created_at;
                         addNode(questionId_graph, questionText, "question", contentCreatedAt, dashboard_url);
                         addLink(contentId, questionId_graph);
+
+                        // getCommentsGroupedByQuestionReport(access_token, contentId).then(response => {
+                        //     console.log("getCommentsGroupedByQuestionReport()");
+                        //     console.log(response);
+                        // })
+                        
                         getParentComments(access_token, contentId, questionId).then(response => {
-                            console.log("getParentComments()")
+                            console.log("getParentComments()");
                             console.log(response);
                             let arrayComments = response.content;
                             for (let k = 0; k < arrayComments.length; k++) {
@@ -112,7 +118,9 @@ function drawProject(projectId) {
                                     addLink(commentCreatedBy, commentId);
                                 }
                             }
-                        }).then(d => {
+                        })
+
+                        .then(d => {
                             // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
                             // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
                             f_data.nodes = c_data.nodes;
