@@ -106,8 +106,8 @@ function updateForces(data_links) {
 
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
-    // simulation.alpha(2).restart();
-    simulation.alpha(0.2).restart();
+    simulation.alpha(2).restart();
+    // simulation.alpha(0.2).restart();
 }
 
 //////////// DISPLAY ////////////
@@ -124,8 +124,8 @@ function buildGraph(data_nodes, data_links) {
 
     const color = d3.scaleOrdinal()
         .domain(categorias)
-        // .domain(["deacordo", "respostas", "comentários", "questões", "ferramentas", "mapas", "projetos"])
-        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#fdbf6f", "#ffff99", "#e31a1c", "#fb9a99"]);
+        // .domain(["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"])
+        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#fdbf6f", "#ffff99", "#e31a1c", "#888"]);
         // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
         // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
         // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
@@ -139,7 +139,7 @@ function buildGraph(data_nodes, data_links) {
 
     const node_size = d3.scaleOrdinal()
         .domain(categorias)
-        .range([10, 9, 8, 7, 5, 4, 3, 7, 10]);
+        .range([10, 9, 8, 7, 5, 4, 3, 7, 9]);
 
     let nodes_selection = g
         .selectAll("g.nodes")
@@ -278,9 +278,9 @@ function unfocus(d) {
 
 // update size-related forces
 d3.select(window).on("resize", function () {
-    width = +svg.node().getBoundingClientRect().width;
-    height = +svg.node().getBoundingClientRect().height;
-    updateForces(consolidated_data.links);
+    // width = +svg.node().getBoundingClientRect().width;
+    // height = +svg.node().getBoundingClientRect().height;
+    // updateForces(consolidated_data.links);
 });
 
 d3.select(window).on("load", function () {
@@ -294,27 +294,15 @@ function updateAll(data_links) {
 
 function myCheckBox(checked) {
     // forceProperties.link.enabled = checked;
-    let filteredNodes = consolidated_data.nodes;
+    let filteredNodes = c_data.nodes;
     if (checked) {
-        filteredNodes = consolidated_data.nodes.filter((d) => { return d.group == "mapas" });
+        filteredNodes = c_data.nodes.filter((d) => { return d.group == "map" });
     }
-    let filteredLinks = consolidated_data.links;
+    let filteredLinks = c_data.links;
     buildGraph(filteredNodes, filteredLinks);
-    updateAll(consolidated_data.links);
-    console.log(consolidated_data);
+    updateAll(c_data.links);
+    console.log(c_data);
 }
-
-// function debug() {
-//     const created_at = new Date("2021-03-10T10:54:18.225");
-//     const created_at2 = new Date("2021-03-10T10:54:18.225");
-//     let parsedTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
-//     console.log(parsedTime(created_at) == parsedTime(created_at2));
-//     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(consolidated_data));
-//     var dlAnchorElem = document.getElementById('downloadAnchorElem');
-//     dlAnchorElem.setAttribute("href", dataStr);
-//     dlAnchorElem.setAttribute("download", "scene.json");
-//     dlAnchorElem.click();
-// }
 
 function debug(value) {
     // console.log(d3.select("#time_ticks").value());
@@ -334,15 +322,15 @@ function debug(value) {
 
     let times = d3.scaleTime().domain([0, 50])
         //   .range(new Set(arrayDates.sort()));
-        .range([d3.min(consolidated_data.nodes, d => d.created_at), d3.max(consolidated_data.nodes, d => d.created_at)]);
+        .range([d3.min(c_data.nodes, d => d.created_at), d3.max(c_data.nodes, d => d.created_at)]);
     // console.log(times(value));
     let date_limit = times(value);
-    let filteredNodes = consolidated_data.nodes.filter((d) => { return d.created_at <= date_limit });
-    let filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+    let filteredNodes = c_data.nodes.filter((d) => { return d.created_at <= date_limit });
+    let filteredLinks = c_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
     d3.select("#choose_date").text(parseTime(date_limit))
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks);
-
+    
     function nodes_contains(link, nodes) {
         let source = link.source.id;
         let target = link.target.id;
@@ -362,7 +350,7 @@ function saveSvg() {
 }
 
 function saveJson(){
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(consolidated_data));
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(c_data));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "consolidated_data.json");
@@ -370,19 +358,19 @@ function saveJson(){
 }
 
 function filterUsers(checked){
-    let filteredNodes = consolidated_data.nodes;
-    let filteredLinks = consolidated_data.links
+    let filteredNodes = [];
+    let filteredLinks = [];
     if(checked){
-        filteredNodes = consolidated_data.nodes.filter((d) => { return (d.group == "usuários" || d.group == "grupo_usuários" || d.group == "comentários")});
-        filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+        filteredNodes = c_data.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment")});
+        filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     } else {
-        filteredNodes = consolidated_data.nodes.filter((d) => { return (d.group != "usuários" && d.group != "grupo_usuários")});
-        filteredLinks = consolidated_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
+        filteredNodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+        filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     }
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks);
-
-    function nodes_contains(link, nodes) {
+    
+    function nodes_contains_users(link, nodes) {
         let source = link.source.id;
         let target = link.target.id;
         for (let index = 0; index < nodes.length; index++) {

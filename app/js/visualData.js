@@ -1,16 +1,18 @@
 const access_token = localStorage.getItem("strateegia_api_token");
 console.log(localStorage);
 
-let consolidated_data = {
+let c_data = {
     "nodes": [],
     "links": []
-}
+};
+
+let f_data = {};
 
 function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
     //let parseTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
     //let parsedDate = parseTime(date);
-    consolidated_data["nodes"].push({
+    c_data["nodes"].push({
         "id": id,
         "title": title,
         "group": group,
@@ -20,11 +22,11 @@ function addNode(id, title, group, created_at, dashboard_url) {
 }
 
 function addLink(source, target) {
-    let target_node = consolidated_data["nodes"].find(x => x.id === target)
-    if(target_node != undefined){
+    let target_node = c_data["nodes"].find(x => x.id === target)
+    if (target_node != undefined) {
         target_node.parent_id = source;
     }
-    consolidated_data["links"].push({
+    c_data["links"].push({
         "source": source,
         "target": target
     });
@@ -32,22 +34,27 @@ function addLink(source, target) {
 
 function drawProject(projectId) {
 
+    const ADD_USERS = false;
+
     // console.log(projectId);
-    consolidated_data = {
+    c_data = {
         "nodes": [],
         "links": []
     }
     getProjectById(access_token, projectId).then(project => {
         console.log("getProjectById()")
         console.log(project);
+        const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}`;
         if (project.missions.length > 1) {
-            addNode(projectId, project.title, "project", project.created_at, `https://app.strateegia.digital/dashboard/project/${projectId}`);
+            addNode(projectId, project.title, "project", project.created_at, dashboard_url);
         }
-        // addNode("users", "Usuários", "users");
-        for (let index = 0; index < project.users.length; index++) {
-            const user = project.users[index];
-            // addNode(user.id, user.name, "user");
-            // addLink("users", user.id);
+        if (ADD_USERS) {
+            addNode("users", "Usuários", "users");
+            for (let index = 0; index < project.users.length; index++) {
+                const user = project.users[index];
+                addNode(user.id, user.name, "user");
+                addLink("users", user.id);
+            }
         }
         for (let a = 0; a < project.missions.length; a++) {
             const currentMission = project.missions[a];
@@ -101,12 +108,17 @@ function drawProject(projectId) {
                                 // console.log(commentText);
                                 addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
                                 addLink(questionId_graph, commentId);
-                                //addLink(commentCreatedBy, commentId);
+                                if(ADD_USERS){
+                                    addLink(commentCreatedBy, commentId);
+                                }
                             }
                         }).then(d => {
-                            buildGraph(consolidated_data.nodes, consolidated_data.links);
-                            initializeSimulation(consolidated_data.nodes, consolidated_data.links);
-                            // console.log(calcTime(consolidated_data.nodes));
+                            // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+                            // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
+                            f_data.nodes = c_data.nodes;
+                            f_data.links = c_data.links;
+                            buildGraph(c_data.nodes, c_data.links);
+                            initializeSimulation(c_data.nodes, c_data.links);
                         });
                     }
                 }
@@ -114,8 +126,6 @@ function drawProject(projectId) {
         }
     });
 }
-
-
 
 getAllProjects(access_token).then(labs => {
     console.log("getAllProjects()");
@@ -152,91 +162,3 @@ getAllProjects(access_token).then(labs => {
         .attr("value", (d) => { return d.id })
         .text((d) => { return `${d.lab_title} -> ${d.title}` });
 });
-
-// document.addEventListener("DOMContentLoaded", function () {
-//     let selected_project = d3.select("#projects-list").property('value');
-//     drawProject(selected_project);
-// });
-
-function addMarkup(markup) {
-    const container = document.getElementById("scrubber");
-    container.innerHTML = markup;
-    // addListenerMakeAvailable(projects);
-}
-
-function Scrubber(values, {
-    format = value => value,
-    initial = 0,
-    delay = null,
-    autoplay = true,
-    loop = true,
-    loopDelay = null,
-    alternate = false
-} = {}) {
-    values = Array.from(values);
-    const form = `<form style="font: 12px var(--sans-serif); font-variant-numeric: tabular-nums; display: flex; height: 33px; align-items: center;">
-    <button name=b type=button style="margin-right: 0.4em; width: 5em;"></button>
-    <label style="display: flex; align-items: center;">
-      <input name=i type=range min=0 max=${values.length - 1} value=${initial} step=1 style="width: 180px;">
-      <output name=o style="margin-left: 0.4em;"></output>
-    </label>
-  </form>`;
-    let frame = null;
-    let timer = null;
-    let interval = null;
-    let direction = 1;
-
-    function start() {
-        form.b.textContent = "Pause";
-        if (delay === null) frame = requestAnimationFrame(tick);
-        else interval = setInterval(tick, delay);
-    }
-
-    function stop() {
-        form.b.textContent = "Play";
-        if (frame !== null) cancelAnimationFrame(frame), frame = null;
-        if (timer !== null) clearTimeout(timer), timer = null;
-        if (interval !== null) clearInterval(interval), interval = null;
-    }
-
-    function running() {
-        return frame !== null || timer !== null || interval !== null;
-    }
-
-    function tick() {
-        if (form.i.valueAsNumber === (direction > 0 ? values.length - 1 : direction < 0 ? 0 : NaN)) {
-            if (!loop) return stop();
-            if (alternate) direction = -direction;
-            if (loopDelay !== null) {
-                if (frame !== null) cancelAnimationFrame(frame), frame = null;
-                if (interval !== null) clearInterval(interval), interval = null;
-                timer = setTimeout(() => (step(), start()), loopDelay);
-                return;
-            }
-        }
-        if (delay === null) frame = requestAnimationFrame(tick);
-        step();
-    }
-
-    function step() {
-        form.i.valueAsNumber = (form.i.valueAsNumber + direction + values.length) % values.length;
-        form.i.dispatchEvent(new CustomEvent("input", { bubbles: true }));
-    }
-    form.i.oninput = event => {
-        if (event && event.isTrusted && running()) stop();
-        form.value = values[form.i.valueAsNumber];
-        form.o.value = format(form.value, form.i.valueAsNumber, values);
-    };
-    form.b.onclick = () => {
-        if (running()) return stop();
-        direction = alternate && form.i.valueAsNumber === values.length - 1 ? -1 : 1;
-        form.i.valueAsNumber = (form.i.valueAsNumber + direction) % values.length;
-        form.i.dispatchEvent(new CustomEvent("input", { bubbles: true }));
-        start();
-    };
-    form.i.oninput();
-    if (autoplay) start();
-    else stop();
-    disposal(form).then(stop);
-    return form;
-}

@@ -75,6 +75,21 @@ async function getParentComments(token, content_id, question_id){
     return data;    
 }
 
+async function getCommentsGroupedByQuestionReport(token, content_id){
+
+    const response = await fetch(`${API_URL}content/${content_id}/comment/report?size=5000`, {
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    const data = await response.json();
+
+    return data;    
+}
+
 // async function addKitToUser(token:string, kit: any) {
 //     const JSONkit = JSON.stringify(kit);
 
