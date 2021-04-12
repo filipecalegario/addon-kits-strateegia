@@ -90,36 +90,49 @@ function drawProject(projectId) {
                     const arrayQuestions = arrayContents[i].kit.questions;
                     for (let j = 0; j < arrayQuestions.length; j++) {
                         const questionId = arrayQuestions[j].id;
-                        const questionId_graph = `${arrayQuestions[j].id}.${contentId}`;
+                        const questionId_graph = `${questionId}.${contentId}`;
                         const questionText = arrayQuestions[j].question;
                         const questionCreatedAt = arrayQuestions[j].created_at;
                         addNode(questionId_graph, questionText, "question", contentCreatedAt, dashboard_url);
                         addLink(contentId, questionId_graph);
+                    }
 
-                        // getCommentsGroupedByQuestionReport(access_token, contentId).then(response => {
-                        //     console.log("getCommentsGroupedByQuestionReport()");
-                        //     console.log(response);
-                        // })
-                        
-                        getParentComments(access_token, contentId, questionId).then(response => {
-                            console.log("getParentComments()");
-                            console.log(response);
-                            let arrayComments = response.content;
-                            for (let k = 0; k < arrayComments.length; k++) {
-                                const questionId = arrayComments[k].question_id;
-                                const commentId = arrayComments[k].id;
-                                const commentText = arrayComments[k].text;
-                                const commentCreatedAt = arrayComments[k].created_at;
-                                const commentCreatedBy = arrayComments[k].created_by;
-                                // console.log(commentText);
+                    getCommentsGroupedByQuestionReport(access_token, contentId).then(question_report => {
+                        const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}/content/${contentId}`
+                        console.log("getCommentsGroupedByQuestionReport()");
+                        console.log(question_report);
+                        for (let k = 0; k < question_report.length; k++) {
+                            const questionId = question_report[k].id;
+                            const questionId_graph = `${questionId}.${contentId}`;
+                            const arrayComments = question_report[k].comments;
+                            for (let w = 0; w < arrayComments.length; w++) {
+                                const comment = arrayComments[w];
+                                const commentId = comment.id;
+                                const commentText = comment.text;
+                                const commentCreatedAt = comment.created_at;
+                                const commentCreatedBy = comment.created_by;
                                 addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
                                 addLink(questionId_graph, commentId);
-                                if(ADD_USERS){
-                                    addLink(commentCreatedBy, commentId);
+                                const replies = comment.replies;
+                                for (let reply_index = 0; reply_index < replies.length; reply_index++) {
+                                    const reply = replies[reply_index];
+                                    const replyId = reply.id;
+                                    const replyText = reply.text;
+                                    const replyCreatedAt = reply.created_at;
+                                    const replyCreatedBy = reply.created_by;
+                                    addNode(replyId, replyText, "reply", replyCreatedAt, dashboard_url);
+                                    addLink(commentId, replyId);
+                                }
+                                const agreements = comment.agreements;
+                                for(let agree_index = 0; agree_index < agreements.length; agree_index++) {
+                                    const agreement = agreements[agree_index];
+                                    const agreementId = `${agree_index}.${commentId}`
+                                    addNode(agreementId, "OK", "agreement", agreement.created_at, dashboard_url);
+                                    addLink(commentId, agreementId);
                                 }
                             }
-                        })
-
+                        }
+                    })
                         .then(d => {
                             // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
                             // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
@@ -128,7 +141,6 @@ function drawProject(projectId) {
                             buildGraph(c_data.nodes, c_data.links);
                             initializeSimulation(c_data.nodes, c_data.links);
                         });
-                    }
                 }
             });
         }

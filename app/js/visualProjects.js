@@ -129,7 +129,7 @@ function buildGraph(data_nodes, data_links) {
     const color = d3.scaleOrdinal()
         .domain(categorias)
         // .domain(["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"])
-        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#fdbf6f", "#ffff99", "#e31a1c", "#888"]);
+        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#e41a1c", "#4daf4a", "#e31a1c", "#888"]);
         // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
         // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
         // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
@@ -143,7 +143,7 @@ function buildGraph(data_nodes, data_links) {
 
     const node_size = d3.scaleOrdinal()
         .domain(categorias)
-        .range([10, 9, 8, 7, 5, 4, 3, 7, 9]);
+        .range([10, 9, 8, 7, 5, 5, 3, 7, 9]);
 
     let nodes_selection = g
         .selectAll("g.nodes")
