@@ -79,7 +79,7 @@ function initializeForces(data_nodes, data_links) {
 }
 
 // apply new force properties
-function updateForces(data_links) {
+function updateForces(data_links, alpha) {
     // get each force by name and update the properties
     simulation.force("center")
         .x(width * forceProperties.center.x)
@@ -106,8 +106,12 @@ function updateForces(data_links) {
 
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
-    simulation.alpha(2).restart();
-    // simulation.alpha(0.2).restart();
+    // simulation.alpha(2).restart();
+    if(alpha != undefined){
+        simulation.alpha(alpha).restart();
+    } else {
+        simulation.alpha(0.2).restart();
+    }
 }
 
 //////////// DISPLAY ////////////
@@ -287,8 +291,8 @@ d3.select(window).on("load", function () {
     // d3.select("#filter-users").attr("checked", "true");
 });
 
-function updateAll(data_links) {
-    updateForces(data_links);
+function updateAll(data_links, alpha) {
+    updateForces(data_links, alpha);
     updateDisplay();
 }
 
@@ -368,7 +372,7 @@ function filterUsers(checked){
         filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     }
     buildGraph(filteredNodes, filteredLinks);
-    updateAll(filteredLinks);
+    updateAll(filteredLinks, 2);
     
     function nodes_contains_users(link, nodes) {
         let source = link.source.id;
