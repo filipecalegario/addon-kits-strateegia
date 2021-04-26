@@ -122,6 +122,13 @@ function drawProject(projectId) {
                                     const replyCreatedBy = reply.created_by;
                                     addNode(replyId, replyText, "reply", replyCreatedAt, dashboard_url);
                                     addLink(commentId, replyId);
+                                    for (let reply_agreement_index = 0; reply_agreement_index < reply.agreements.length; reply_agreement_index++) {
+                                        const reply_agreement = reply.agreements[reply_agreement_index];
+                                        const reply_agreement_id = `${reply_agreement_index}.${replyId}`;
+                                        const reply_agreement_created_at = reply_agreement.created_at;
+                                        addNode(reply_agreement_id, "OK", "agreement", reply_agreement_created_at, dashboard_url);
+                                        addLink(replyId, reply_agreement_id);
+                                    }
                                 }
                                 const agreements = comment.agreements;
                                 for(let agree_index = 0; agree_index < agreements.length; agree_index++) {
