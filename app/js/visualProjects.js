@@ -3,9 +3,9 @@ let width = 1000; //+svg.node().getBoundingClientRect().width;
 let height = 600; //+svg.node().getBoundingClientRect().height;
 const g = svg.append("g");
 svg.call(d3.zoom()
-    .extent([[0, 0], [width, height]])
-    .scaleExtent([0.3, 8])
-    .on("zoom", zoomed));
+  .extent([[0, 0], [width, height]])
+  .scaleExtent([0.3, 8])
+  .on("zoom", zoomed));
 
 function zoomed({ transform }) {
     g.attr("transform", transform);
@@ -107,7 +107,7 @@ function updateForces(data_links, alpha) {
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
     // simulation.alpha(2).restart();
-    if(alpha != undefined){
+    if (alpha != undefined) {
         simulation.alpha(alpha).restart();
     } else {
         simulation.alpha(0.2).restart();
@@ -130,14 +130,14 @@ function buildGraph(data_nodes, data_links) {
         .domain(categorias)
         // .domain(["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"])
         .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#e41a1c", "#4daf4a", "#e31a1c", "#888"]);
-        // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
-        // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
-        // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
-        // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
-        // .range(d3.schemeCategory10);
-        // .range(d3.schemePaired);
-        // .range(d3.schemeTableau10);
-        // .range(d3.schemeSet1);
+    // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
+    // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
+    // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
+    // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
+    // .range(d3.schemeCategory10);
+    // .range(d3.schemePaired);
+    // .range(d3.schemeTableau10);
+    // .range(d3.schemeSet1);
     // .range(["#0d0887","#5c01a6","#9c179e","#cc4778","#ed7953","#fdb42f","#f0f921"]);
     // .range(["#eff3ff","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]);
 
@@ -174,7 +174,7 @@ function buildGraph(data_nodes, data_links) {
     let node_circle = node_group
         .append("a")
         .attr("xlink:href", function (d) { return d.dashboard_url; })
-        .attr("target","_blank")
+        .attr("target", "_blank")
         .append("circle")
         // .attr("stroke", "#fff")
         // .attr("stroke-width", 1.5)
@@ -334,7 +334,7 @@ function debug(value) {
     d3.select("#choose_date").text(parseTime(date_limit))
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks);
-    
+
     function nodes_contains(link, nodes) {
         let source = link.source.id;
         let target = link.target.id;
@@ -353,7 +353,7 @@ function saveSvg() {
     console.log("saveSvg");
 }
 
-function saveJson(){
+function saveJson() {
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(c_data));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -361,19 +361,19 @@ function saveJson(){
     dlAnchorElem.click();
 }
 
-function filterUsers(checked){
+function filterUsers(checked) {
     let filteredNodes = [];
     let filteredLinks = [];
-    if(checked){
-        filteredNodes = c_data.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment")});
+    if (checked) {
+        filteredNodes = c_data.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment") });
         filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     } else {
-        filteredNodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+        filteredNodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users") });
         filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     }
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks, 2);
-    
+
     function nodes_contains_users(link, nodes) {
         let source = link.source.id;
         let target = link.target.id;
@@ -384,6 +384,36 @@ function filterUsers(checked){
             }
         }
         return false;
+    }
+}
+
+let isFirstTime = true;
+
+function build_project_graph() {
+    // // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+    // // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
+    f_data.nodes = filterArray(c_data.nodes, filters);
+    let node_ids = [];
+    for (let index = 0; index < f_data.nodes.length; index++) {
+        const element = f_data.nodes[index].id;
+        node_ids.push(element);
+    }
+    // // console.log(node_ids);
+    f_data.links = c_data.links.filter(d => {
+        console.log(d);
+        return node_ids.includes(d.source) && node_ids.includes(d.target);
+    });
+    // f_data.links = filterArray(c_data.links, filterLink);
+    // f_data = c_data;
+    if (isFirstTime) {
+        console.log("It is first time");
+        buildGraph(f_data.nodes, f_data.links);
+        initializeSimulation(f_data.nodes, f_data.links);
+        isFirstTime = false;
+    } else {
+        console.log("It is NOT first time");
+        buildGraph(f_data.nodes, f_data.links);
+        updateAll(f_data.links, 2);
     }
 }
 
