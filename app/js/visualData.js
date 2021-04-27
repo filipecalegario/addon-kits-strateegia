@@ -1,12 +1,12 @@
 const access_token = localStorage.getItem("strateegia_api_token");
 console.log(localStorage);
 
-let c_data = {
+let cData = {
     "nodes": [],
     "links": []
 };
 
-let f_data = {};
+let fData = {};
 
 let filters = {
     // size: size => size === 50 || size === 70,
@@ -20,7 +20,7 @@ function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
     //let parseTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
     //let parsedDate = parseTime(date);
-    c_data["nodes"].push({
+    cData["nodes"].push({
         "id": id,
         "title": title,
         "group": group,
@@ -30,11 +30,11 @@ function addNode(id, title, group, created_at, dashboard_url) {
 }
 
 function addLink(source, target) {
-    let target_node = c_data["nodes"].find(x => x.id === target)
+    let target_node = cData["nodes"].find(x => x.id === target)
     if (target_node != undefined) {
         target_node.parent_id = source;
     }
-    c_data["links"].push({
+    cData["links"].push({
         "source": source,
         "target": target
     });
@@ -45,12 +45,12 @@ function drawProject(projectId) {
     const ADD_USERS = false;
 
     // console.log(projectId);
-    c_data = {
+    cData = {
         "nodes": [],
         "links": []
     }
 
-    f_data = {
+    fData = {
         "nodes": [],
         "links": []
     }
@@ -153,17 +153,9 @@ function drawProject(projectId) {
                                 }
                             }
                         }
-                    })
-                        .then(d => {
-                            // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
-                            // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
-                            // f_data.nodes = c_data.nodes;
-                            // f_data.links = c_data.links;
-                            //===================================================
-                            applyFilters();
-                            buildGraph(f_data.nodes, f_data.links);
-                            initializeSimulation(f_data.nodes, f_data.links);
-                        });
+                    }).then(d => {
+                        initializeGraph();
+                    });
                 }
             });
         }
@@ -206,6 +198,30 @@ getAllProjects(access_token).then(labs => {
         .text((d) => { return `${d.lab_title} -> ${d.title}` });
 });
 
+/* 
+    =============================
+    Functions for manipulating the graph
+    =============================
+ */
+
+function initializeGraph() {
+    const filteredData = applyFilters(cData);
+    buildGraph(filteredData.nodes, filteredData.links);
+    initializeSimulation(filteredData.nodes, filteredData.links);
+}
+
+function updateGraph() {
+    const filteredData = applyFilters(cData);
+    buildGraph(filteredData.nodes, filteredData.links);
+    updateAll(filteredData.links);
+}
+
+/* 
+    =============================
+    Functions for filtering data for graph
+    =============================
+ */
+
 /**
  * Filters an array of objects using custom predicates.
  *
@@ -226,17 +242,50 @@ function filterArray(array, filters) {
     });
 }
 
-function applyFilters() {
-    f_data.nodes = filterArray(c_data.nodes, filters);
-    let node_ids = [];
-    for (let index = 0; index < f_data.nodes.length; index++) {
-        const element = f_data.nodes[index].id;
-        node_ids.push(element);
+function applyFilters(inputData) {
+    let filteredData = {
+        "nodes": [],
+        "links": []
+    };
+    filteredData.nodes = filterArray(inputData.nodes, filters);
+    let nodeIDs = [];
+    for (let index = 0; index < filteredData.nodes.length; index++) {
+        const element = filteredData.nodes[index].id;
+        nodeIDs.push(element);
     }
     // console.log(node_ids);
-    f_data.links = c_data.links.filter(d => {
+    filteredData.links = inputData.links.filter(d => {
         // console.log(d);
-        return (node_ids.includes(d.source) && node_ids.includes(d.target)) || 
-        (node_ids.includes(d.source.id) && node_ids.includes(d.target.id));
+        return (nodeIDs.includes(d.source) && nodeIDs.includes(d.target)) ||
+            (nodeIDs.includes(d.source.id) && nodeIDs.includes(d.target.id));
     });
+    return filteredData;
+}
+
+function filterByTime(inputDate) {
+    let parseTime = d3.timeFormat("%d/%m/%Y - %H:%M:%S");
+
+    let timeScale = d3.scaleTime().domain([0, 50])
+        .range([d3.min(cData.nodes, d => d.created_at), d3.max(cData.nodes, d => d.created_at)]);
+    let dateLimit = timeScale(inputDate);
+
+    // const nodesContains = (link, nodes) => {
+    //     let source = link.source.id;
+    //     let target = link.target.id;
+    //     for (let index = 0; index < nodes.length; index++) {
+    //         const node_id = nodes[index].id;
+    //         if (node_id == target) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    // fData.nodes = fData.nodes.filter((d) => { return d.created_at <= dateLimit });
+    // fData.links = fData.links.filter((d) => { return nodesContains(d, fData.nodes) });
+
+    filters.created_at = created_at => created_at <= dateLimit;
+    d3.select("#choose_date").text(parseTime(dateLimit))
+
+    updateGraph();
 }

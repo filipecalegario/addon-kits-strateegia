@@ -298,63 +298,22 @@ function updateAll(data_links, alpha) {
 
 function myCheckBox(checked) {
     // forceProperties.link.enabled = checked;
-    let filteredNodes = c_data.nodes;
+    let filteredNodes = cData.nodes;
     if (checked) {
-        filteredNodes = c_data.nodes.filter((d) => { return d.group == "map" });
+        filteredNodes = cData.nodes.filter((d) => { return d.group == "map" });
     }
-    let filteredLinks = c_data.links;
+    let filteredLinks = cData.links;
     buildGraph(filteredNodes, filteredLinks);
-    updateAll(c_data.links);
-    console.log(c_data);
+    updateAll(cData.links);
+    console.log(cData);
 }
-
-function debug(value) {
-    // console.log(d3.select("#time_ticks").value());
-    // console.log(value);
-
-    let parseTime = d3.timeFormat("%d/%m/%Y - %H:%M:%S");
-
-    // let arrayDates = [];
-
-    // consolidated_data.nodes.forEach(element => {
-    //     if(element.created_at != undefined){
-    //         arrayDates.push(element.created_at);
-    //     }
-    // });
-
-    // console.log(arrayDates);
-
-    let times = d3.scaleTime().domain([0, 50])
-        //   .range(new Set(arrayDates.sort()));
-        .range([d3.min(c_data.nodes, d => d.created_at), d3.max(c_data.nodes, d => d.created_at)]);
-    // console.log(times(value));
-    let date_limit = times(value);
-    let filteredNodes = c_data.nodes.filter((d) => { return d.created_at <= date_limit });
-    let filteredLinks = c_data.links.filter((d) => { return nodes_contains(d, filteredNodes) });
-    d3.select("#choose_date").text(parseTime(date_limit))
-    buildGraph(filteredNodes, filteredLinks);
-    updateAll(filteredLinks);
-    
-    function nodes_contains(link, nodes) {
-        let source = link.source.id;
-        let target = link.target.id;
-        for (let index = 0; index < nodes.length; index++) {
-            const node_id = nodes[index].id;
-            if (node_id == target) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
-
 
 function saveSvg() {
     console.log("saveSvg");
 }
 
 function saveJson(){
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(c_data));
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cData));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "consolidated_data.json");
@@ -365,11 +324,11 @@ function filterUsers(checked){
     let filteredNodes = [];
     let filteredLinks = [];
     if(checked){
-        filteredNodes = c_data.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment")});
-        filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
+        filteredNodes = cData.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment")});
+        filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     } else {
-        filteredNodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
-        filteredLinks = c_data.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
+        filteredNodes = cData.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+        filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     }
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks, 2);
