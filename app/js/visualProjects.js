@@ -401,7 +401,7 @@ function build_project_graph() {
     // // console.log(node_ids);
     f_data.links = c_data.links.filter(d => {
         console.log(d);
-        return node_ids.includes(d.source) && node_ids.includes(d.target);
+        return (node_ids.includes(d.source) && node_ids.includes(d.target)) || (node_ids.includes(d.source.id) && node_ids.includes(d.target.id));
     });
     // f_data.links = filterArray(c_data.links, filterLink);
     // f_data = c_data;

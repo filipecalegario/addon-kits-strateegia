@@ -33,7 +33,7 @@ function addNode(id, title, group, created_at, dashboard_url) {
 }
 
 function addLink(source, target) {
-    let target_node = c_data["nodes"].find(x => x.id === target)
+    let target_node = c_data["nodes"].find(x => x.id === target);
     if (target_node != undefined) {
         target_node.parent_id = source;
     }
@@ -49,6 +49,11 @@ function drawProject(projectId) {
 
     // console.log(projectId);
     c_data = {
+        "nodes": [],
+        "links": []
+    }
+
+    f_data = {
         "nodes": [],
         "links": []
     }
