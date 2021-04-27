@@ -8,6 +8,14 @@ let c_data = {
 
 let f_data = {};
 
+let filters = {
+    // size: size => size === 50 || size === 70,
+    // color: color => ['blue', 'black'].includes(color.toLowerCase()),
+    // locations: locations => locations.find(x => ['JAPAN', 'USA'].includes(x.toUpperCase())),
+    // details: details => details.length < 30 && details.width >= 70,
+    group: group => ["project", "map", "kit", "question", "comment"].includes(group),
+};
+
 function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
     //let parseTime = d3.timeFormat("%Y-%m-%dT%H:%M:%S.%L");
@@ -41,6 +49,12 @@ function drawProject(projectId) {
         "nodes": [],
         "links": []
     }
+
+    f_data = {
+        "nodes": [],
+        "links": []
+    }
+
     getProjectById(access_token, projectId).then(project => {
         console.log("getProjectById()")
         console.log(project);
@@ -131,7 +145,7 @@ function drawProject(projectId) {
                                     }
                                 }
                                 const agreements = comment.agreements;
-                                for(let agree_index = 0; agree_index < agreements.length; agree_index++) {
+                                for (let agree_index = 0; agree_index < agreements.length; agree_index++) {
                                     const agreement = agreements[agree_index];
                                     const agreementId = `${agree_index}.${commentId}`
                                     addNode(agreementId, "OK", "agreement", agreement.created_at, dashboard_url);
@@ -143,10 +157,12 @@ function drawProject(projectId) {
                         .then(d => {
                             // f_data.nodes = c_data.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
                             // f_data.links = c_data.links.filter((d) => { return nodes_contains_users(d, f_data.nodes) });
-                            f_data.nodes = c_data.nodes;
-                            f_data.links = c_data.links;
-                            buildGraph(c_data.nodes, c_data.links);
-                            initializeSimulation(c_data.nodes, c_data.links);
+                            // f_data.nodes = c_data.nodes;
+                            // f_data.links = c_data.links;
+                            //===================================================
+                            applyFilters();
+                            buildGraph(f_data.nodes, f_data.links);
+                            initializeSimulation(f_data.nodes, f_data.links);
                         });
                 }
             });
@@ -189,3 +205,38 @@ getAllProjects(access_token).then(labs => {
         .attr("value", (d) => { return d.id })
         .text((d) => { return `${d.lab_title} -> ${d.title}` });
 });
+
+/**
+ * Filters an array of objects using custom predicates.
+ *
+ * @param  {Array}  array: the array to filter
+ * @param  {Object} filters: an object with the filter criteria
+ * @return {Array}
+ * REFERENCE: https://gist.github.com/jherax/f11d669ba286f21b7a2dcff69621eb72
+ */
+function filterArray(array, filters) {
+    const filterKeys = Object.keys(filters);
+    return array.filter(item => {
+        // validates all filter criteria
+        return filterKeys.every(key => {
+            // ignores non-function predicates
+            if (typeof filters[key] !== 'function') return true;
+            return filters[key](item[key]);
+        });
+    });
+}
+
+function applyFilters() {
+    f_data.nodes = filterArray(c_data.nodes, filters);
+    let node_ids = [];
+    for (let index = 0; index < f_data.nodes.length; index++) {
+        const element = f_data.nodes[index].id;
+        node_ids.push(element);
+    }
+    // console.log(node_ids);
+    f_data.links = c_data.links.filter(d => {
+        // console.log(d);
+        return (node_ids.includes(d.source) && node_ids.includes(d.target)) || 
+        (node_ids.includes(d.source.id) && node_ids.includes(d.target.id));
+    });
+}
