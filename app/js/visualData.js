@@ -8,13 +8,7 @@ let cData = {
 
 let fData = {};
 
-let filters = {
-    // size: size => size === 50 || size === 70,
-    // color: color => ['blue', 'black'].includes(color.toLowerCase()),
-    // locations: locations => locations.find(x => ['JAPAN', 'USA'].includes(x.toUpperCase())),
-    // details: details => details.length < 30 && details.width >= 70,
-    group: group => ["project", "map", "kit", "question", "comment"].includes(group),
-};
+let filters = {};
 
 function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
@@ -44,7 +38,6 @@ function drawProject(projectId) {
 
     const ADD_USERS = false;
 
-    // console.log(projectId);
     cData = {
         "nodes": [],
         "links": []
@@ -54,6 +47,10 @@ function drawProject(projectId) {
         "nodes": [],
         "links": []
     }
+
+    filters = {
+        group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement"].includes(group),
+    };
 
     getProjectById(access_token, projectId).then(project => {
         console.log("getProjectById()")
@@ -162,41 +159,44 @@ function drawProject(projectId) {
     });
 }
 
-getAllProjects(access_token).then(labs => {
-    console.log("getAllProjects()");
-    console.log(labs);
-    // Initial project
-    drawProject(labs[0].projects[0].id)
-    let listProjects = [];
-    for (let i = 0; i < labs.length; i++) {
-        let currentLab = labs[i];
-        if (currentLab.lab.name == null) {
-            currentLab.lab.name = "Personal";
+function initializeProjectList(){
+    getAllProjects(access_token).then(labs => {
+        console.log("getAllProjects()");
+        console.log(labs);
+        // Initial project
+        drawProject(labs[0].projects[0].id)
+        let listProjects = [];
+        for (let i = 0; i < labs.length; i++) {
+            let currentLab = labs[i];
+            if (currentLab.lab.name == null) {
+                currentLab.lab.name = "Personal";
+            }
+            for (let j = 0; j < currentLab.projects.length; j++) {
+                const project = currentLab.projects[j];
+                console.log(`${currentLab.lab.name} -> ${project.title}`);
+                listProjects.push({
+                    "id": project.id,
+                    "title": project.title,
+                    "lab_id": currentLab.lab.id,
+                    "lab_title": currentLab.lab.name
+                });
+            }
         }
-        for (let j = 0; j < currentLab.projects.length; j++) {
-            const project = currentLab.projects[j];
-            console.log(`${currentLab.lab.name} -> ${project.title}`);
-            listProjects.push({
-                "id": project.id,
-                "title": project.title,
-                "lab_id": currentLab.lab.id,
-                "lab_title": currentLab.lab.name
-            });
-        }
-    }
-    let options = d3.select("#projects-list")
-        .on("change", () => {
-            let selected_project = d3.select("#projects-list").property('value');
-            drawProject(selected_project);
-        })
-        .selectAll("option")
-        .data(listProjects);
+        let options = d3.select("#projects-list")
+            .on("change", () => {
+                let selected_project = d3.select("#projects-list").property('value');
+                drawProject(selected_project);
+            })
+            .selectAll("option")
+            .data(listProjects);
+    
+        options.enter()
+            .append("option")
+            .attr("value", (d) => { return d.id })
+            .text((d) => { return `${d.lab_title} -> ${d.title}` });
+    });
+}
 
-    options.enter()
-        .append("option")
-        .attr("value", (d) => { return d.id })
-        .text((d) => { return `${d.lab_title} -> ${d.title}` });
-});
 
 /* 
     =============================
@@ -259,6 +259,7 @@ function applyFilters(inputData) {
         return (nodeIDs.includes(d.source) && nodeIDs.includes(d.target)) ||
             (nodeIDs.includes(d.source.id) && nodeIDs.includes(d.target.id));
     });
+    fData = filteredData;
     return filteredData;
 }
 
@@ -289,3 +290,11 @@ function filterByTime(inputDate) {
 
     updateGraph();
 }
+
+/* 
+    =============================
+    Execute!
+    =============================
+ */
+
+initializeProjectList();
