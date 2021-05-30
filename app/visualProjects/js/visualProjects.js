@@ -2,6 +2,7 @@ const svg = d3.select("svg");
 let width = 1000; //+svg.node().getBoundingClientRect().width;
 let height = 600; //+svg.node().getBoundingClientRect().height;
 const g = svg.append("g");
+let toggle = false;
 svg.call(d3.zoom()
     .extent([[0, 0], [width, height]])
     .scaleExtent([0.3, 8])
@@ -107,7 +108,7 @@ function updateForces(data_links, alpha) {
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
     // simulation.alpha(2).restart();
-    if(alpha != undefined){
+    if (alpha != undefined) {
         simulation.alpha(alpha).restart();
     } else {
         simulation.alpha(0.2).restart();
@@ -129,21 +130,21 @@ function buildGraph(data_nodes, data_links) {
     const color = d3.scaleOrdinal()
         .domain(categorias)
         // .domain(["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"])
-        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#e41a1c", "#4daf4a", "#e31a1c", "#888"]);
-        // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
-        // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
-        // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
-        // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
-        // .range(d3.schemeCategory10);
-        // .range(d3.schemePaired);
-        // .range(d3.schemeTableau10);
-        // .range(d3.schemeSet1);
+        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#d7191c", "#2b83ba", "#66bd63", "#4d4d4d", "#888"]);
+    // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
+    // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
+    // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
+    // .range(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6"]);
+    // .range(d3.schemeCategory10);
+    // .range(d3.schemePaired);
+    // .range(d3.schemeTableau10);
+    // .range(d3.schemeSet1);
     // .range(["#0d0887","#5c01a6","#9c179e","#cc4778","#ed7953","#fdb42f","#f0f921"]);
     // .range(["#eff3ff","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]);
 
     const node_size = d3.scaleOrdinal()
         .domain(categorias)
-        .range([10, 9, 8, 7, 5, 5, 3, 7, 9]);
+        .range([10, 9, 8, 7, 6, 4, 3, 7, 9]);
 
     let nodes_selection = g
         .selectAll("g.nodes")
@@ -174,7 +175,7 @@ function buildGraph(data_nodes, data_links) {
     let node_circle = node_group
         .append("a")
         .attr("xlink:href", function (d) { return d.dashboard_url; })
-        .attr("target","_blank")
+        .attr("target", "_blank")
         .append("circle")
         // .attr("stroke", "#fff")
         // .attr("stroke-width", 1.5)
@@ -308,11 +309,7 @@ function myCheckBox(checked) {
     console.log(cData);
 }
 
-function saveSvg() {
-    console.log("saveSvg");
-}
-
-function saveJson(){
+function saveJson() {
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cData));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -320,19 +317,19 @@ function saveJson(){
     dlAnchorElem.click();
 }
 
-function filterUsers(checked){
+function filterUsers(checked) {
     let filteredNodes = [];
     let filteredLinks = [];
-    if(checked){
-        filteredNodes = cData.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment")});
+    if (checked) {
+        filteredNodes = cData.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment") });
         filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     } else {
-        filteredNodes = cData.nodes.filter((d) => { return (d.group != "user" && d.group != "users")});
+        filteredNodes = cData.nodes.filter((d) => { return (d.group != "user" && d.group != "users") });
         filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
     }
     buildGraph(filteredNodes, filteredLinks);
     updateAll(filteredLinks, 2);
-    
+
     function nodes_contains_users(link, nodes) {
         let source = link.source.id;
         let target = link.target.id;
@@ -344,6 +341,37 @@ function filterUsers(checked){
         }
         return false;
     }
+}
+
+function saveAsSVG() {
+    //get svg element.
+    var svg = document.getElementById("main_svg");
+
+    //get svg source.
+    var serializer = new XMLSerializer();
+    var source = serializer.serializeToString(svg);
+
+    //add name spaces.
+    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+
+    //add xml declaration
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    //convert svg source to URI data scheme.
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+
+    //set url value to a element's href attribute.
+    let link_svg = document.getElementById("link_svg");
+    // link_svg.href = url;
+    link_svg.setAttribute("href", url);
+    link_svg.setAttribute("download", "graph.svg");
+    link_svg.click();
+    //you can download svg file by right click menu.
 }
 
 //   .filter(time => data.nodes.some(d => contains(d, time)))

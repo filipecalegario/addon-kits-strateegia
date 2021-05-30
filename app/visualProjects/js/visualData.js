@@ -36,7 +36,7 @@ function addLink(source, target) {
 
 function drawProject(projectId) {
 
-    const ADD_USERS = false;
+    const ADD_USERS = true;
 
     cData = {
         "nodes": [],
@@ -49,7 +49,8 @@ function drawProject(projectId) {
     }
 
     filters = {
-        group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement"].includes(group),
+        group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
+        // group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement", "users", "user"].includes(group),
     };
 
     getProjectById(access_token, projectId).then(project => {
@@ -60,10 +61,10 @@ function drawProject(projectId) {
             addNode(projectId, project.title, "project", project.created_at, dashboard_url);
         }
         if (ADD_USERS) {
-            addNode("users", "Usuários", "users");
+            addNode("users", "Usuários", "users", project.created_at);
             for (let index = 0; index < project.users.length; index++) {
                 const user = project.users[index];
-                addNode(user.id, user.name, "user");
+                addNode(user.id, user.name, "user", project.created_at);
                 addLink("users", user.id);
             }
         }
@@ -123,7 +124,8 @@ function drawProject(projectId) {
                                 const commentCreatedAt = comment.created_at;
                                 const commentCreatedBy = comment.created_by;
                                 addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
-                                addLink(questionId_graph, commentId);
+                                //addLink(questionId_graph, commentId);
+                                addLink(commentCreatedBy,commentId);
                                 const replies = comment.replies;
                                 for (let reply_index = 0; reply_index < replies.length; reply_index++) {
                                     const reply = replies[reply_index];
@@ -132,21 +134,26 @@ function drawProject(projectId) {
                                     const replyCreatedAt = reply.created_at;
                                     const replyCreatedBy = reply.created_by;
                                     addNode(replyId, replyText, "reply", replyCreatedAt, dashboard_url);
-                                    addLink(commentId, replyId);
+                                    //addLink(commentId, replyId);
+                                    addLink(replyCreatedBy,replyId);
                                     for (let reply_agreement_index = 0; reply_agreement_index < reply.agreements.length; reply_agreement_index++) {
                                         const reply_agreement = reply.agreements[reply_agreement_index];
                                         const reply_agreement_id = `${reply_agreement_index}.${replyId}`;
                                         const reply_agreement_created_at = reply_agreement.created_at;
+                                        const reply_agreement_created_by = reply_agreement.user_id;
                                         addNode(reply_agreement_id, "OK", "agreement", reply_agreement_created_at, dashboard_url);
-                                        addLink(replyId, reply_agreement_id);
+                                        //addLink(replyId, reply_agreement_id);
+                                        addLink(reply_agreement_created_by, reply_agreement_id);
                                     }
                                 }
                                 const agreements = comment.agreements;
                                 for (let agree_index = 0; agree_index < agreements.length; agree_index++) {
                                     const agreement = agreements[agree_index];
                                     const agreementId = `${agree_index}.${commentId}`
+                                    const agreementCreatedBy = agreement.user_id;
                                     addNode(agreementId, "OK", "agreement", agreement.created_at, dashboard_url);
-                                    addLink(commentId, agreementId);
+                                    //addLink(commentId, agreementId);
+                                    addLink(agreementCreatedBy, agreementId);
                                 }
                             }
                         }
