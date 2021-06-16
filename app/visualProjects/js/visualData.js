@@ -34,7 +34,7 @@ function addLink(source, target) {
     });
 }
 
-function drawProject(projectId) {
+function drawProject(projectId, selected_mode) {
 
     const ADD_USERS = true;
 
@@ -48,10 +48,18 @@ function drawProject(projectId) {
         "links": []
     }
 
-    filters = {
-        group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
-        // group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement", "users", "user"].includes(group),
-    };
+    if (selected_mode === "usuário") {
+        filters = {
+            group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
+            // group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement", "users", "user"].includes(group),
+        };
+    } else if (selected_mode === "projeto") {
+        filters = {
+            // group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
+            group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement"].includes(group),
+        };
+    }
+
 
     getProjectById(access_token, projectId).then(project => {
         console.log("getProjectById()")
@@ -124,8 +132,11 @@ function drawProject(projectId) {
                                 const commentCreatedAt = comment.created_at;
                                 const commentCreatedBy = comment.created_by;
                                 addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
-                                //addLink(questionId_graph, commentId);
-                                addLink(commentCreatedBy,commentId);
+                                if (selected_mode === "usuário") {
+                                    addLink(commentCreatedBy, commentId);
+                                } else if (selected_mode === "projeto") {
+                                    addLink(questionId_graph, commentId);
+                                }
                                 const replies = comment.replies;
                                 for (let reply_index = 0; reply_index < replies.length; reply_index++) {
                                     const reply = replies[reply_index];
@@ -134,16 +145,22 @@ function drawProject(projectId) {
                                     const replyCreatedAt = reply.created_at;
                                     const replyCreatedBy = reply.created_by;
                                     addNode(replyId, replyText, "reply", replyCreatedAt, dashboard_url);
-                                    //addLink(commentId, replyId);
-                                    addLink(replyCreatedBy,replyId);
+                                    if (selected_mode === "usuário") {
+                                        addLink(replyCreatedBy, replyId);
+                                    } else if (selected_mode === "projeto") {
+                                        addLink(commentId, replyId);
+                                    }
                                     for (let reply_agreement_index = 0; reply_agreement_index < reply.agreements.length; reply_agreement_index++) {
                                         const reply_agreement = reply.agreements[reply_agreement_index];
                                         const reply_agreement_id = `${reply_agreement_index}.${replyId}`;
                                         const reply_agreement_created_at = reply_agreement.created_at;
                                         const reply_agreement_created_by = reply_agreement.user_id;
                                         addNode(reply_agreement_id, "OK", "agreement", reply_agreement_created_at, dashboard_url);
-                                        //addLink(replyId, reply_agreement_id);
-                                        addLink(reply_agreement_created_by, reply_agreement_id);
+                                        if (selected_mode === "usuário") {
+                                            addLink(reply_agreement_created_by, reply_agreement_id);
+                                        } else if (selected_mode === "projeto") {
+                                            addLink(replyId, reply_agreement_id);
+                                        }
                                     }
                                 }
                                 const agreements = comment.agreements;
@@ -152,8 +169,11 @@ function drawProject(projectId) {
                                     const agreementId = `${agree_index}.${commentId}`
                                     const agreementCreatedBy = agreement.user_id;
                                     addNode(agreementId, "OK", "agreement", agreement.created_at, dashboard_url);
-                                    //addLink(commentId, agreementId);
-                                    addLink(agreementCreatedBy, agreementId);
+                                    if (selected_mode === "usuário") {
+                                        addLink(agreementCreatedBy, agreementId);
+                                    } else if (selected_mode === "projeto") {
+                                        addLink(commentId, agreementId);
+                                    }
                                 }
                             }
                         }
@@ -166,7 +186,7 @@ function drawProject(projectId) {
     });
 }
 
-function initializeProjectList(){
+function initializeProjectList() {
     getAllProjects(access_token).then(labs => {
         console.log("getAllProjects()");
         console.log(labs);
@@ -192,15 +212,30 @@ function initializeProjectList(){
         let options = d3.select("#projects-list")
             .on("change", () => {
                 let selected_project = d3.select("#projects-list").property('value');
-                drawProject(selected_project);
+                let selected_mode = d3.select("#modes-list").property('value');
+                drawProject(selected_project, selected_mode);
             })
             .selectAll("option")
             .data(listProjects);
-    
+
         options.enter()
             .append("option")
             .attr("value", (d) => { return d.id })
             .text((d) => { return `${d.lab_title} -> ${d.title}` });
+
+        let modes = ["projeto", "usuário"];
+        d3.select("#modes-list")
+            .on("change", () => {
+                let selected_project = d3.select("#projects-list").property('value');
+                let selected_mode = d3.select("#modes-list").property('value');
+                drawProject(selected_project, selected_mode);
+            })
+            .selectAll("option")
+            .data(modes)
+            .enter()
+            .append("option")
+            .attr("value", (d) => { return d })
+            .text((d) => { return d });
     });
 }
 

@@ -1,6 +1,6 @@
 const svg = d3.select("svg");
-let width = 1000; //+svg.node().getBoundingClientRect().width;
-let height = 600; //+svg.node().getBoundingClientRect().height;
+let width = 2000; //+svg.node().getBoundingClientRect().width;
+let height = 1500; //+svg.node().getBoundingClientRect().height;
 const g = svg.append("g");
 let toggle = false;
 svg.call(d3.zoom()
