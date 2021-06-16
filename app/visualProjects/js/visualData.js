@@ -48,6 +48,10 @@ function drawProject(projectId, selected_mode) {
         "links": []
     }
 
+    if (selected_mode === undefined){
+        selected_mode = "projeto";
+    }
+
     if (selected_mode === "usuário") {
         filters = {
             group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
