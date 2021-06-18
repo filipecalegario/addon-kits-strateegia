@@ -8,6 +8,8 @@ let cData = {
 
 let fData = {};
 
+let counter = {users: 0, comments:0, replies:0, agreements:0};
+
 let filters = {};
 
 function addNode(id, title, group, created_at, dashboard_url) {
@@ -48,7 +50,7 @@ function drawProject(projectId, selected_mode) {
         "links": []
     }
 
-    if (selected_mode === undefined){
+    if (selected_mode === undefined) {
         selected_mode = "projeto";
     }
 
@@ -63,7 +65,6 @@ function drawProject(projectId, selected_mode) {
             group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement"].includes(group),
         };
     }
-
 
     getProjectById(access_token, projectId).then(project => {
         console.log("getProjectById()")
@@ -250,15 +251,21 @@ function initializeProjectList() {
     =============================
  */
 
-function initializeGraph() {
+function commonUpdate(){
     const filteredData = applyFilters(cData);
+    fData = filteredData;
+    countStatistics(fData.nodes);
     buildGraph(filteredData.nodes, filteredData.links);
+    return filteredData;
+}
+
+function initializeGraph() {
+    const filteredData = commonUpdate();
     initializeSimulation(filteredData.nodes, filteredData.links);
 }
 
 function updateGraph() {
-    const filteredData = applyFilters(cData);
-    buildGraph(filteredData.nodes, filteredData.links);
+    const filteredData = commonUpdate();
     updateAll(filteredData.links);
 }
 
@@ -336,6 +343,40 @@ function filterByTime(inputDate) {
 
     updateGraph();
 }
+
+/* 
+    =============================
+    Counter
+    =============================
+ */
+
+function countStatistics(filtered_nodes) {
+    counter.users = 0;
+    counter.comments = 0;
+    counter.replies = 0;
+    counter.agreements = 0;
+    for (let i = 0; i < filtered_nodes.length; i++) {
+        const e = filtered_nodes[i];
+        if (e.group === "user") {
+            counter.users = counter.users + 1;
+        } else if (e.group === "comment") {
+            counter.comments = counter.comments + 1;
+        } else if (e.group === "reply") {
+            counter.replies = counter.replies + 1;
+        } else if (e.group === "agreement") {
+            counter.agreements = counter.agreements + 1;
+        }
+    }
+    d3.select("#users")
+    .text(counter.users);
+    d3.select("#comments")
+    .text(counter.comments);
+    d3.select("#replies")
+    .text(counter.replies);
+    d3.select("#agreements")
+    .text(counter.agreements);
+}
+
 
 /* 
     =============================
