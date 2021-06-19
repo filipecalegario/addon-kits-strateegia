@@ -26,77 +26,103 @@
     <div class="row">
       <nav class="col-md-2 d-none d-md-block bg-light sidebar">
         <div class="sidebar-sticky">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">
-                <span data-feather="home"></span>
-                Tudo <span class="sr-only">(current)</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="save"></span>
-                Orders
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="shopping-cart"></span>
-                Products
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="users"></span>
-                Customers
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="bar-chart-2"></span>
-                Reports
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="layers"></span>
-                Integrations
-              </a>
-            </li>
-          </ul>
-
-          <!-- <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-            <span>Saved reports</span>
-            <a class="d-flex align-items-center text-muted" href="#">
-              <span data-feather="plus-circle"></span>
-            </a>
-          </h6> -->
-          <ul class="nav flex-column mb-2">
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="file-text"></span>
-                pessoas
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="file-text"></span>
-                respostas
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="file-text"></span>
-                comentários
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="file-text"></span>
-                concordar
-              </a>
-            </li>
-          </ul>
+          <div class="controls">
+            <!-- <div class="nav-item">
+                <p><label><input type="checkbox" checked="" onchange="forceProperties.link.enabled = this.checked; updateGraph();"> link</label> Sets link length</p>
+                <label title="The force will push/pull nodes to make links this long">
+                    distance
+                    <output id="link_DistanceSliderOutput">30</output>
+                    <input type="range" min="0" max="100" value="30" step="1" oninput="d3.select(&#39;#link_DistanceSliderOutput&#39;).text(value); forceProperties.link.distance=value; updateGraph();">
+                </label>
+                <label title="Higher values increase rigidity of the links (WARNING: high values are computationally expensive)">
+                    iterations
+                    <output id="link_IterationsSliderOutput">1</output>
+                    <input type="range" min="1" max="10" value="1" step="1" oninput="d3.select(&#39;#link_IterationsSliderOutput&#39;).text(value); forceProperties.link.iterations=value; updateGraph();">
+                </label>
+            </div> -->
+            <!-- <div class="force">
+                <p><label><input type="checkbox" checked="" onchange="forceProperties.charge.enabled = this.checked; updateGraph();"> charge</label> Attracts (+) or repels (-) nodes to/from each other.</p>
+                <label title="Negative strength repels nodes. Positive strength attracts nodes.">
+                    strength
+                    <output id="charge_StrengthSliderOutput">-30</output>
+                    <input type="range" min="-200" max="50" value="-30" step=".1" oninput="d3.select(&#39;#charge_StrengthSliderOutput&#39;).text(value); forceProperties.charge.strength=value; updateGraph();">
+                </label>
+                <label title="Minimum distance where force is applied">
+                    distanceMin
+                    <output id="charge_distanceMinSliderOutput">1</output>
+                    <input type="range" min="0" max="50" value="1" step=".1" oninput="d3.select(&#39;#charge_distanceMinSliderOutput&#39;).text(value); forceProperties.charge.distanceMin=value; updateGraph();">
+                </label>
+                <label title="Maximum distance where force is applied">
+                    distanceMax
+                    <output id="charge_distanceMaxSliderOutput">2000</output>
+                    <input type="range" min="0" max="2000" value="2000" step=".1" oninput="d3.select(&#39;#charge_distanceMaxSliderOutput&#39;).text(value); forceProperties.charge.distanceMax=value; updateGraph();">
+                </label>
+            </div> -->
+            <div class="nav-link">
+              <label>
+                <input type="checkbox" checked=""
+                  onchange="forceProperties.collide.enabled = this.checked; updateGraph();"> colisão
+              </label>
+              <label>
+                força
+                <output id="collide_StrengthSliderOutput">0.01</output>
+                <input type="range" min="0" max="2" value=".01" step=".01"
+                  oninput="d3.select(&#39;#collide_StrengthSliderOutput&#39;).text(value); forceProperties.collide.strength=value; updateGraph();">
+              </label>
+              <label title="Size of nodes">
+                raio
+                <output id="collide_radiusSliderOutput">10</output>
+                <input type="range" min="0" max="25" value="10" step="1"
+                  oninput="d3.select(&#39;#collide_radiusSliderOutput&#39;).text(value); forceProperties.collide.radius=value; updateGraph();">
+              </label>
+              <label
+                title="Higher values increase rigidity of the nodes (WARNING: high values are computationally expensive)">
+                iterações
+                <output id="collide_iterationsSliderOutput">1</output>
+                <input type="range" min="1" max="10" value="1" step="1"
+                  oninput="d3.select(&#39;#collide_iterationsSliderOutput&#39;).text(value); forceProperties.collide.iterations=value; updateGraph();">
+              </label>
+            </div>
+            <!-- <div class="force">
+                <p><label><input type="checkbox" checked="" onchange="forceProperties.forceX.enabled = this.checked; updateGraph();"> forceX</label> Acts like gravity. Pulls all points towards an X location.</p>
+                <label>
+                    strength
+                    <output id="forceX_StrengthSliderOutput">.1</output>
+                    <input type="range" min="0" max="1" value=".1" step="0.01" oninput="d3.select(&#39;#forceX_StrengthSliderOutput&#39;).text(value); forceProperties.forceX.strength=value; updateGraph();">
+                </label>
+                <label title="The X location that the force will push the nodes to (NOTE: This demo multiplies by the svg width)">
+                    x
+                    <output id="forceX_XSliderOutput">.5</output>
+                    <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select(&#39;#forceX_XSliderOutput&#39;).text(value); forceProperties.forceX.x=value; updateGraph();">
+                </label>
+            </div> -->
+            <!-- <div class="force">
+                <p><label><input type="checkbox" checked="" onchange="forceProperties.forceY.enabled = this.checked; updateGraph();"> forceY</label> Acts like gravity. Pulls all points towards a Y location.</p>
+                <label>
+                    strength
+                    <output id="forceY_StrengthSliderOutput">.1</output>
+                    <input type="range" min="0" max="1" value=".1" step="0.01" oninput="d3.select(&#39;#forceY_StrengthSliderOutput&#39;).text(value); forceProperties.forceY.strength=value; updateGraph();">
+                </label>
+                <label title="The Y location that the force will push the nodes to (NOTE: This demo multiplies by the svg height)">
+                    y
+                    <output id="forceY_YSliderOutput">.5</output>
+                    <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select(&#39;#forceY_YSliderOutput&#39;).text(value); forceProperties.forceY.y=value; updateGraph();">
+                </label>
+            </div> -->
+            <!-- <div class="force">
+                <p><label>center</label> Shifts the view, so the graph is centered at this location.</p>
+                <label>
+                    x
+                    <output id="center_XSliderOutput">.5</output>
+                    <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select(&#39;#center_XSliderOutput&#39;).text(value); forceProperties.center.x=value; updateGraph();">
+                </label>
+                <label>
+                    y
+                    <output id="center_YSliderOutput">.5</output>
+                    <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select(&#39;#center_YSliderOutput&#39;).text(value); forceProperties.center.y=value; updateGraph();">
+                </label>
+            </div> -->
+          </div>
         </div>
       </nav>
 
