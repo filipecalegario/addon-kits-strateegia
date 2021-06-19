@@ -30,7 +30,7 @@ forceProperties = {
         distanceMax: 387.8
     },
     collide: {
-        enabled: false,
+        enabled: true,
         strength: .01,
         iterations: 10,
         radius: 10
@@ -117,11 +117,13 @@ function updateForces(data_links, alpha) {
 
 //////////// DISPLAY ////////////
 
-// color = d3.scaleOrdinal(d3.schemeCategory10);
+// color = d3.scaleOrdinal(d3.schemeCategory10); "#377eb8"
 
 // generate the svg objects and force simulation
 function buildGraph(data_nodes, data_links) {
-    let categorias = ["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"];
+    let categorias = ["project", "map",     "kit",     "question", "comment", "reply", "agreement", "user", "users"];
+    let colors = ["#023a78", "#0b522e", "#ff8000", "#974da2", "#e51d1d", "#377eb8", "#4eaf49", "#636c77", "#b2b7bd"];
+    // let colors =     ["#ac92ea", "#e3b692", "#ed7d31", "#3aadd9", "#eb5463", "#46ceac", "#fdcd56", "#d56fac", "#636c77"];
     simulation.stop();
     svg.style("width", width + 'px')
         .style("height", height + 'px')
@@ -130,7 +132,7 @@ function buildGraph(data_nodes, data_links) {
     const color = d3.scaleOrdinal()
         .domain(categorias)
         // .domain(["project", "map", "kit", "question", "comment", "reply", "agreement", "user", "users"])
-        .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#d7191c", "#2b83ba", "#66bd63", "#4d4d4d", "#888"]);
+        .range(colors);
     // .range(["#7f0000", "#b30000", "#d7301f", "#ef6548", "#fc8d59", "#fdbb84", "#fdd49e", "#fee8c8", "#fff7ec"]);
     // .range(["#081d58", "#253494", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#edf8b1", "#ffffd9"]);
     // .range(["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"] );
