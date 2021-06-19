@@ -31,8 +31,8 @@ forceProperties = {
     },
     collide: {
         enabled: true,
-        strength: .01,
-        iterations: 10,
+        strength: 0.01,
+        iterations: 1,
         radius: 10
     },
     forceX: {
