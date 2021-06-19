@@ -63,15 +63,18 @@
                 <input type="checkbox" checked=""
                   onchange="forceProperties.collide.enabled = this.checked; updateGraph();"> colisão
               </label>
+              <br>
               <label>
                 força
                 <output id="collide_StrengthSliderOutput">0.01</output>
+                <br>
                 <input type="range" min="0" max="2" value=".01" step=".01"
                   oninput="d3.select(&#39;#collide_StrengthSliderOutput&#39;).text(value); forceProperties.collide.strength=value; updateGraph();">
               </label>
               <label title="Size of nodes">
                 raio
                 <output id="collide_radiusSliderOutput">10</output>
+                <br>
                 <input type="range" min="0" max="25" value="10" step="1"
                   oninput="d3.select(&#39;#collide_radiusSliderOutput&#39;).text(value); forceProperties.collide.radius=value; updateGraph();">
               </label>
@@ -79,6 +82,7 @@
                 title="Higher values increase rigidity of the nodes (WARNING: high values are computationally expensive)">
                 iterações
                 <output id="collide_iterationsSliderOutput">1</output>
+                <br>
                 <input type="range" min="1" max="10" value="1" step="1"
                   oninput="d3.select(&#39;#collide_iterationsSliderOutput&#39;).text(value); forceProperties.collide.iterations=value; updateGraph();">
               </label>
