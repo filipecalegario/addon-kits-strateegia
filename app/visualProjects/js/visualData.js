@@ -8,9 +8,18 @@ let cData = {
 
 let fData = {};
 
-let counter = {users: 0, comments:0, replies:0, agreements:0};
+let counter = [
+    {"id":"users", "title": "usuários", "quant":0, "color":"#636c77"},
+    {"id":"comments", "title": "respostas", "quant":0, "color":"#e51d1d"},
+    {"id":"replies", "title": "comentários", "quant":0, "color":"#377eb8"},
+    {"id":"agreements", "title": "concordar", "quant":0, "color":"#4eaf49"},
+    {"id":"kits", "title": "ferramentas", "quant":0, "color":"#ff8000"},
+    {"id":"questions", "title": "questões", "quant":0, "color":"#974da2"},
+];
 
 let filters = {};
+
+let selected_mode = "projeto";
 
 function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
@@ -36,7 +45,7 @@ function addLink(source, target) {
     });
 }
 
-function drawProject(projectId, selected_mode) {
+function drawProject(projectId, s_mode) {
 
     const ADD_USERS = true;
 
@@ -50,9 +59,7 @@ function drawProject(projectId, selected_mode) {
         "links": []
     }
 
-    if (selected_mode === undefined) {
-        selected_mode = "projeto";
-    }
+    selected_mode = s_mode;
 
     if (selected_mode === "usuário") {
         filters = {
@@ -351,30 +358,59 @@ function filterByTime(inputDate) {
  */
 
 function countStatistics(filtered_nodes) {
-    counter.users = 0;
-    counter.comments = 0;
-    counter.replies = 0;
-    counter.agreements = 0;
+    counter.forEach(function(d, i) {
+        d.quant = 0;
+    });
     for (let i = 0; i < filtered_nodes.length; i++) {
         const e = filtered_nodes[i];
         if (e.group === "user") {
-            counter.users = counter.users + 1;
+            const c = counter.find(x => x.id === "users");
+            c.quant = c.quant + 1;
         } else if (e.group === "comment") {
-            counter.comments = counter.comments + 1;
+            const c = counter.find(x => x.id === "comments");
+            c.quant = c.quant + 1;
         } else if (e.group === "reply") {
-            counter.replies = counter.replies + 1;
+            const c = counter.find(x => x.id === "replies");
+            c.quant = c.quant + 1;
         } else if (e.group === "agreement") {
-            counter.agreements = counter.agreements + 1;
+            const c = counter.find(x => x.id === "agreements");
+            c.quant = c.quant + 1;
+        } else if (e.group === "kit") {
+            const c = counter.find(x => x.id === "kits");
+            c.quant = c.quant + 1;
+        } else if (e.group === "question") {
+            const c = counter.find(x => x.id === "questions");
+            c.quant = c.quant + 1;
         }
     }
-    d3.select("#users")
-    .text(counter.users);
-    d3.select("#comments")
-    .text(counter.comments);
-    d3.select("#replies")
-    .text(counter.replies);
-    d3.select("#agreements")
-    .text(counter.agreements);
+
+    let filter = {};
+
+    if(selected_mode === "projeto"){
+        filter = {
+            id: id => ["comments", "replies", "agreements", "kits", "questions"].includes(id),
+        };
+    } else {
+        filter = {
+            id: id => ["comments", "replies", "agreements", "users"].includes(id),
+        };
+    }
+
+    let data = filterArray(counter, filter);
+
+    let ul_ = d3.select("#stat_list")
+    .selectAll("li")
+    .data(data, d => d.id);
+    ul_
+    .enter()
+    .append("li");
+    ul_
+    .style("color", d => d.color)
+    .text(d => `${d.title} ${d.quant}`);
+    ul_
+    .exit()
+    .remove();
+    
 }
 
 
