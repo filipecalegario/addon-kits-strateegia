@@ -1,6 +1,8 @@
 const access_token = localStorage.getItem("strateegia_api_token");
 console.log(localStorage);
 
+
+
 let cData = {
     "nodes": [],
     "links": []
@@ -9,17 +11,15 @@ let cData = {
 let fData = {};
 
 let counter = [
-    {"id":"users", "title": "usuários", "quant":0, "color":"#636c77"},
-    {"id":"comments", "title": "respostas", "quant":0, "color":"#e51d1d"},
-    {"id":"replies", "title": "comentários", "quant":0, "color":"#377eb8"},
-    {"id":"agreements", "title": "concordar", "quant":0, "color":"#4eaf49"},
-    {"id":"kits", "title": "ferramentas", "quant":0, "color":"#ff8000"},
-    {"id":"questions", "title": "questões", "quant":0, "color":"#974da2"},
+    { "id": "users", "title": "usuários", "quant": 0, "color": "#636c77" },
+    { "id": "comments", "title": "respostas", "quant": 0, "color": "#e51d1d" },
+    { "id": "replies", "title": "comentários", "quant": 0, "color": "#377eb8" },
+    { "id": "agreements", "title": "concordar", "quant": 0, "color": "#4eaf49" },
+    { "id": "kits", "title": "ferramentas", "quant": 0, "color": "#ff8000" },
+    { "id": "questions", "title": "questões", "quant": 0, "color": "#974da2" },
 ];
 
 let filters = {};
-
-let selected_mode = "projeto";
 
 function addNode(id, title, group, created_at, dashboard_url) {
     let date = new Date(created_at)
@@ -70,6 +70,10 @@ function drawProject(projectId, s_mode) {
         filters = {
             // group: group => ["comment", "reply", "agreement", "users", "user"].includes(group),
             group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement"].includes(group),
+        };
+    } else if (selected_mode === "indicadores") {
+        filters = {
+            group: group => ["project", "map", "kit", "question", "comment", "reply", "agreement", "users", "user"].includes(group),
         };
     }
 
@@ -189,9 +193,17 @@ function drawProject(projectId, s_mode) {
                                 }
                             }
                         }
-                    }).then(d => {
-                        initializeGraph();
-                    });
+                    })
+                        .then(d => {
+                            if (selected_mode !== "indicadores") {
+                                initializeGraph();
+                            } else {
+                                const filteredData = applyFilters(cData);
+                                fData = filteredData;
+                                countStatistics(fData.nodes);
+                            }
+                        })
+                        ;
                 }
             });
         }
@@ -203,7 +215,6 @@ function initializeProjectList() {
         console.log("getAllProjects()");
         console.log(labs);
         // Initial project
-        drawProject(labs[0].projects[0].id)
         let listProjects = [];
         for (let i = 0; i < labs.length; i++) {
             let currentLab = labs[i];
@@ -228,14 +239,14 @@ function initializeProjectList() {
                 drawProject(selected_project, selected_mode);
             })
             .selectAll("option")
-            .data(listProjects);
+            .data(listProjects, d => d.id);
 
         options.enter()
             .append("option")
             .attr("value", (d) => { return d.id })
             .text((d) => { return `${d.lab_title} -> ${d.title}` });
 
-        let modes = ["projeto", "usuário"];
+        let modes = ["indicadores", "projeto", "usuário"];
         d3.select("#modes-list")
             .on("change", () => {
                 let selected_project = d3.select("#projects-list").property('value');
@@ -248,6 +259,7 @@ function initializeProjectList() {
             .append("option")
             .attr("value", (d) => { return d })
             .text((d) => { return d });
+        drawProject(labs[0].projects[0].id, "indicadores");
     });
 }
 
@@ -258,7 +270,7 @@ function initializeProjectList() {
     =============================
  */
 
-function commonUpdate(){
+function commonUpdate() {
     const filteredData = applyFilters(cData);
     fData = filteredData;
     countStatistics(fData.nodes);
@@ -269,6 +281,7 @@ function commonUpdate(){
 function initializeGraph() {
     const filteredData = commonUpdate();
     initializeSimulation(filteredData.nodes, filteredData.links);
+    updateAll(filteredData.links);
 }
 
 function updateGraph() {
@@ -358,7 +371,7 @@ function filterByTime(inputDate) {
  */
 
 function countStatistics(filtered_nodes) {
-    counter.forEach(function(d, i) {
+    counter.forEach(function (d, i) {
         d.quant = 0;
     });
     for (let i = 0; i < filtered_nodes.length; i++) {
@@ -386,31 +399,69 @@ function countStatistics(filtered_nodes) {
 
     let filter = {};
 
-    if(selected_mode === "projeto"){
+    if (selected_mode === "projeto") {
         filter = {
             id: id => ["comments", "replies", "agreements", "kits", "questions"].includes(id),
         };
-    } else {
+    } else if (selected_mode === "usuário") {
         filter = {
             id: id => ["comments", "replies", "agreements", "users"].includes(id),
+        };
+    } else if (selected_mode === "indicadores") {
+        filter = {
+            id: id => ["comments", "replies", "agreements", "users", "questions"].includes(id),
         };
     }
 
     let data = filterArray(counter, filter);
+    if (selected_mode !== "indicadores") {
+        d3.select("#indicators").style("display", "none");
+        d3.select("#stat_list").style("display", "block");
+        d3.select("#graph_view").style("display", "block");
+        let ul_ = d3.select("#stat_list")
+            .selectAll("li")
+            .data(data, d => d.id);
+        ul_
+            .enter()
+            .append("li");
+        ul_
+            .style("color", d => d.color)
+            .text(d => `${d.title} ${d.quant}`);
+        ul_
+            .exit()
+            .remove();
+    } else {
+        // Make sure the list is visible
+        d3.select("#indicators").style("display", "block");
+        d3.select("#stat_list").style("display", "none");
+        d3.select("#graph_view").style("display", "none");
+        let pessoas_num = data[0].quant;
+        let questoes_num = data[4].quant;
+        let respostas_num = data[1].quant;
+        let respostas_potenciais = pessoas_num * questoes_num;
+        let engajamento_questoes = (respostas_num / respostas_potenciais) * 100;
+        let comentarios_num = data[2].quant;
+        let concordar_num = data[3].quant;
+        let interacoes_num = comentarios_num + concordar_num;
+        let interacoes_potenciais = pessoas_num * respostas_num;
+        let engajamento_interacoes = interacoes_num / interacoes_potenciais * 100;
+        // Calculate the average of the engagement
+        let engajamento_media = (engajamento_questoes + engajamento_interacoes) / 2;
+        engajamento_questoes = engajamento_questoes.toFixed(2);
+        engajamento_interacoes = engajamento_interacoes.toFixed(2);
+        d3.select("#pessoas_num").text(pessoas_num);
+        d3.select("#questoes_num").text(questoes_num);
+        d3.select("#respostas_num").text(respostas_num);
+        d3.select("#respostas_potenciais_num").text(respostas_potenciais);
+        d3.select("#engajamento_questoes_num").text(engajamento_questoes);
+        d3.select("#comentarios_num").text(comentarios_num);
+        d3.select("#concordar_num").text(concordar_num);
+        d3.select("#interacoes_num").text(interacoes_num);
+        d3.select("#interacoes_potenciais_num").text(interacoes_potenciais);
+        d3.select("#engajamento_interacoes_num").text(engajamento_interacoes);
+        d3.select("#engajamento_media_num").text(engajamento_media.toFixed(2)+"%");
+    }
 
-    let ul_ = d3.select("#stat_list")
-    .selectAll("li")
-    .data(data, d => d.id);
-    ul_
-    .enter()
-    .append("li");
-    ul_
-    .style("color", d => d.color)
-    .text(d => `${d.title} ${d.quant}`);
-    ul_
-    .exit()
-    .remove();
-    
 }
 
 
