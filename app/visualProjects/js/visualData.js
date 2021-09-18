@@ -12,6 +12,8 @@ let fData = {};
 
 let counter = [
     { "id": "users", "title": "usuários", "quant": 0, "color": "#636c77" },
+    { "id": "active_users", "title": "usuários ativos", "quant": 0, "color": "#636c77" },
+    { "id": "inactive_users", "title": "usuários inativos", "quant": 0, "color": "#636c77" },
     { "id": "comments", "title": "respostas", "quant": 0, "color": "#e51d1d" },
     { "id": "replies", "title": "comentários", "quant": 0, "color": "#377eb8" },
     { "id": "agreements", "title": "concordar", "quant": 0, "color": "#4eaf49" },
@@ -148,7 +150,7 @@ function drawProject(projectId, s_mode) {
                                 const commentCreatedAt = comment.created_at;
                                 const commentCreatedBy = comment.created_by;
                                 addNode(commentId, commentText, "comment", commentCreatedAt, dashboard_url);
-                                if (selected_mode === "usuário") {
+                                if (selected_mode === "usuário" || selected_mode === "indicadores") {
                                     addLink(commentCreatedBy, commentId);
                                 } else if (selected_mode === "projeto") {
                                     addLink(questionId_graph, commentId);
@@ -161,7 +163,7 @@ function drawProject(projectId, s_mode) {
                                     const replyCreatedAt = reply.created_at;
                                     const replyCreatedBy = reply.created_by;
                                     addNode(replyId, replyText, "reply", replyCreatedAt, dashboard_url);
-                                    if (selected_mode === "usuário") {
+                                    if (selected_mode === "usuário" || selected_mode === "indicadores")  {
                                         addLink(replyCreatedBy, replyId);
                                     } else if (selected_mode === "projeto") {
                                         addLink(commentId, replyId);
@@ -172,7 +174,7 @@ function drawProject(projectId, s_mode) {
                                         const reply_agreement_created_at = reply_agreement.created_at;
                                         const reply_agreement_created_by = reply_agreement.user_id;
                                         addNode(reply_agreement_id, "OK", "agreement", reply_agreement_created_at, dashboard_url);
-                                        if (selected_mode === "usuário") {
+                                        if (selected_mode === "usuário" || selected_mode === "indicadores")  {
                                             addLink(reply_agreement_created_by, reply_agreement_id);
                                         } else if (selected_mode === "projeto") {
                                             addLink(replyId, reply_agreement_id);
@@ -185,7 +187,7 @@ function drawProject(projectId, s_mode) {
                                     const agreementId = `${agree_index}.${commentId}`
                                     const agreementCreatedBy = agreement.user_id;
                                     addNode(agreementId, "OK", "agreement", agreement.created_at, dashboard_url);
-                                    if (selected_mode === "usuário") {
+                                    if (selected_mode === "usuário" || selected_mode === "indicadores")  {
                                         addLink(agreementCreatedBy, agreementId);
                                     } else if (selected_mode === "projeto") {
                                         addLink(commentId, agreementId);
@@ -200,7 +202,7 @@ function drawProject(projectId, s_mode) {
                             } else {
                                 const filteredData = applyFilters(cData);
                                 fData = filteredData;
-                                countStatistics(fData.nodes);
+                                countStatistics(fData);
                             }
                         })
                         ;
@@ -273,7 +275,7 @@ function initializeProjectList() {
 function commonUpdate() {
     const filteredData = applyFilters(cData);
     fData = filteredData;
-    countStatistics(fData.nodes);
+    countStatistics(fData);
     buildGraph(filteredData.nodes, filteredData.links);
     return filteredData;
 }
@@ -370,15 +372,26 @@ function filterByTime(inputDate) {
     =============================
  */
 
-function countStatistics(filtered_nodes) {
+function countStatistics(input_data) {
     counter.forEach(function (d, i) {
         d.quant = 0;
     });
-    for (let i = 0; i < filtered_nodes.length; i++) {
-        const e = filtered_nodes[i];
+    for (let i = 0; i < input_data.nodes.length; i++) {
+        const e = input_data.nodes[i];
         if (e.group === "user") {
             const c = counter.find(x => x.id === "users");
             c.quant = c.quant + 1;
+            // Check if user has links in input_data.links
+            let user_links = input_data.links.filter(d => {
+                return d.source === e.id;
+            });
+            if (user_links.length > 0) {
+                const c = counter.find(x => x.id === "active_users");
+                c.quant = c.quant + 1;
+            } else {
+                const c = counter.find(x => x.id === "inactive_users");
+                c.quant = c.quant + 1;
+            }
         } else if (e.group === "comment") {
             const c = counter.find(x => x.id === "comments");
             c.quant = c.quant + 1;
@@ -409,12 +422,13 @@ function countStatistics(filtered_nodes) {
         };
     } else if (selected_mode === "indicadores") {
         filter = {
-            id: id => ["comments", "replies", "agreements", "users", "questions"].includes(id),
+            id: id => ["comments", "replies", "agreements", "users", "questions", "active_users", "inactive_users"].includes(id),
         };
     }
 
     let data = filterArray(counter, filter);
-    if (selected_mode !== "indicadores") {
+
+    if (selected_mode === "usuário" || selected_mode === "projeto") {
         d3.select("#indicators").style("display", "none");
         d3.select("#stat_list").style("display", "block");
         d3.select("#graph_view").style("display", "block");
@@ -430,35 +444,44 @@ function countStatistics(filtered_nodes) {
         ul_
             .exit()
             .remove();
-    } else {
+    } else if (selected_mode === "indicadores") {
         // Make sure the list is visible
         d3.select("#indicators").style("display", "block");
         d3.select("#stat_list").style("display", "none");
         d3.select("#graph_view").style("display", "none");
-        let pessoas_num = data[0].quant;
-        let questoes_num = data[4].quant;
-        let respostas_num = data[1].quant;
-        let respostas_potenciais = pessoas_num * questoes_num;
-        let engajamento_questoes = (respostas_num / respostas_potenciais) * 100;
-        let comentarios_num = data[2].quant;
-        let concordar_num = data[3].quant;
+        
+        
+        let usuarios = data.find(d => d.id === "users").quant;
+        let usuarios_ativos = data.find(d => d.id === "active_users").quant;
+        let usuarios_inativos = data.find(d => d.id === "inactive_users").quant;
+        let indice_atividade = (usuarios_ativos / usuarios) * 100;
+        
+        let questoes_num = data.find(d => d.id === "questions").quant;
+        let respostas_num = data.find(d => d.id === "comments").quant;
+        let comentarios_num = data.find(d => d.id === "replies").quant;
+        let concordar_num = data.find(d => d.id === "agreements").quant;
         let interacoes_num = comentarios_num + concordar_num;
-        let interacoes_potenciais = pessoas_num * respostas_num;
-        let engajamento_interacoes = interacoes_num / interacoes_potenciais * 100;
-        // Calculate the average of the engagement
+
+        let respostas_potenciais = usuarios_ativos * questoes_num;
+        let interacoes_potenciais = usuarios_ativos * respostas_num;
+        let engajamento_questoes = (respostas_num / respostas_potenciais) * 100;
+        let engajamento_interacoes = (interacoes_num / interacoes_potenciais) * 100;
+
         let engajamento_media = (engajamento_questoes + engajamento_interacoes) / 2;
         engajamento_questoes = engajamento_questoes.toFixed(2);
         engajamento_interacoes = engajamento_interacoes.toFixed(2);
-        d3.select("#pessoas_num").text(pessoas_num);
+        d3.select("#pessoas_num").text(usuarios);
+        d3.select("#pessoas_inativas_num").text(usuarios_inativos);
+        d3.select("#indice_atividade_num").text(indice_atividade.toFixed(2)+"%");
         d3.select("#questoes_num").text(questoes_num);
         d3.select("#respostas_num").text(respostas_num);
         d3.select("#respostas_potenciais_num").text(respostas_potenciais);
-        d3.select("#engajamento_questoes_num").text(engajamento_questoes);
+        d3.select("#engajamento_questoes_num").text(engajamento_questoes+"%");
         d3.select("#comentarios_num").text(comentarios_num);
         d3.select("#concordar_num").text(concordar_num);
         d3.select("#interacoes_num").text(interacoes_num);
         d3.select("#interacoes_potenciais_num").text(interacoes_potenciais);
-        d3.select("#engajamento_interacoes_num").text(engajamento_interacoes);
+        d3.select("#engajamento_interacoes_num").text(engajamento_interacoes+"%");
         d3.select("#engajamento_media_num").text(engajamento_media.toFixed(2)+"%");
     }
 

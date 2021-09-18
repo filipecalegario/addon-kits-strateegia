@@ -319,31 +319,31 @@ function saveJson() {
     dlAnchorElem.click();
 }
 
-function filterUsers(checked) {
-    let filteredNodes = [];
-    let filteredLinks = [];
-    if (checked) {
-        filteredNodes = cData.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment") });
-        filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
-    } else {
-        filteredNodes = cData.nodes.filter((d) => { return (d.group != "user" && d.group != "users") });
-        filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
-    }
-    buildGraph(filteredNodes, filteredLinks);
-    updateAll(filteredLinks, 2);
+// function filterUsers(checked) {
+//     let filteredNodes = [];
+//     let filteredLinks = [];
+//     if (checked) {
+//         filteredNodes = cData.nodes.filter((d) => { return (d.group == "user" || d.group == "users" || d.group == "comment") });
+//         filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
+//     } else {
+//         filteredNodes = cData.nodes.filter((d) => { return (d.group != "user" && d.group != "users") });
+//         filteredLinks = cData.links.filter((d) => { return nodes_contains_users(d, filteredNodes) });
+//     }
+//     buildGraph(filteredNodes, filteredLinks);
+//     updateAll(filteredLinks, 2);
 
-    function nodes_contains_users(link, nodes) {
-        let source = link.source.id;
-        let target = link.target.id;
-        for (let index = 0; index < nodes.length; index++) {
-            const node_id = nodes[index].id;
-            if (node_id == source) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
+//     function nodes_contains_users(link, nodes) {
+//         let source = link.source.id;
+//         let target = link.target.id;
+//         for (let index = 0; index < nodes.length; index++) {
+//             const node_id = nodes[index].id;
+//             if (node_id == source) {
+//                 return true;
+//             }
+//         }
+//         return false;
+//     }
+// }
 
 function saveAsSVG() {
     //get svg element.
