@@ -462,12 +462,16 @@ function countStatistics(input_data) {
         let concordar_num = data.find(d => d.id === "agreements").quant;
         let interacoes_num = comentarios_num + concordar_num;
 
+        let respostas_reduzidas = respostas_num / 2;
+
         let respostas_potenciais = usuarios_ativos * questoes_num;
-        let interacoes_potenciais = usuarios_ativos * respostas_num;
+        let interacoes_potenciais = usuarios_ativos * respostas_reduzidas;
+        
         let engajamento_questoes = (respostas_num / respostas_potenciais) * 100;
         let engajamento_interacoes = (interacoes_num / interacoes_potenciais) * 100;
 
         let engajamento_media = (engajamento_questoes + engajamento_interacoes) / 2;
+        
         engajamento_questoes = engajamento_questoes.toFixed(2);
         engajamento_interacoes = engajamento_interacoes.toFixed(2);
         d3.select("#pessoas_num").text(usuarios);
