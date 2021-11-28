@@ -44,7 +44,7 @@ function addLink(source, target) {
         "target": target
     };
     cData["links"].push(newLocal);
-    console.log(newLocal);
+    //console.log(newLocal);
 }
 
 function drawProject(projectId, s_mode) {
@@ -96,6 +96,7 @@ function drawProject(projectId, s_mode) {
                 addLink("users", user.id);
             }
         }
+
         for (let a = 0; a < project.maps.length; a++) {
             const currentMission = project.maps[a];
             const missionId = project.maps[a].id;
@@ -332,7 +333,7 @@ function applyFilters(inputData) {
     }
     // console.log(node_ids);
     filteredData.links = inputData.links.filter(d => {
-        console.log(d);
+        // console.log(d);
         return (nodeIDs.includes(d.source) && nodeIDs.includes(d.target)) || 
         (nodeIDs.includes(d.source.id) && nodeIDs.includes(d.target.id));
     });
