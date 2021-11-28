@@ -1,8 +1,6 @@
 const access_token = localStorage.getItem("strateegia_api_token");
 console.log(localStorage);
 
-
-
 let cData = {
     "nodes": [],
     "links": []
@@ -41,10 +39,12 @@ function addLink(source, target) {
     if (target_node != undefined) {
         target_node.parent_id = source;
     }
-    cData["links"].push({
+    const newLocal = {
         "source": source,
         "target": target
-    });
+    };
+    cData["links"].push(newLocal);
+    console.log(newLocal);
 }
 
 function drawProject(projectId, s_mode) {
@@ -60,6 +60,8 @@ function drawProject(projectId, s_mode) {
         "nodes": [],
         "links": []
     }
+
+    let promisses = [];
 
     selected_mode = s_mode;
 
@@ -83,7 +85,7 @@ function drawProject(projectId, s_mode) {
         console.log("getProjectById()")
         console.log(project);
         const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}`;
-        if (project.missions.length > 1) {
+        if (project.maps.length > 1) {
             addNode(projectId, project.title, "project", project.created_at, dashboard_url);
         }
         if (ADD_USERS) {
@@ -94,9 +96,9 @@ function drawProject(projectId, s_mode) {
                 addLink("users", user.id);
             }
         }
-        for (let a = 0; a < project.missions.length; a++) {
-            const currentMission = project.missions[a];
-            const missionId = project.missions[a].id;
+        for (let a = 0; a < project.maps.length; a++) {
+            const currentMission = project.maps[a];
+            const missionId = project.maps[a].id;
             getMapById(access_token, missionId).then(map_response => {
                 console.log("getMapById()");
                 console.log(map_response);
@@ -104,9 +106,9 @@ function drawProject(projectId, s_mode) {
                 const missionTitle = map_response.title;
                 const missionCreatedAt = map_response.created_at;
                 const projectId = map_response.project_id;
-                const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}`;
+                const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/map/${missionId}`;
                 addNode(missionId, missionTitle, "map", missionCreatedAt, dashboard_url);
-                if (project.missions.length > 1) {
+                if (project.maps.length > 1) {
                     addLink(projectId, missionId);
                 }
             });
@@ -116,16 +118,16 @@ function drawProject(projectId, s_mode) {
                 console.log(response);
                 let arrayContents = response.content;
                 for (let i = 0; i < arrayContents.length; i++) {
-                    const missionId = arrayContents[i].mission_id;
+                    const missionId = arrayContents[i].map_id;
                     const contentId = arrayContents[i].id;
                     const contentCreatedAt = arrayContents[i].created_at;
-                    const kitId = arrayContents[i].kit.id;
-                    const kitTitle = arrayContents[i].kit.title;
-                    const kitCreatedAt = arrayContents[i].kit.created_at;
-                    const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}/content/${contentId}`
+                    const kitId = arrayContents[i].tool.id;
+                    const kitTitle = arrayContents[i].tool.title;
+                    const kitCreatedAt = arrayContents[i].tool.created_at;
+                    const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/map/${missionId}/divergence-point/${contentId}`
                     addNode(contentId, kitTitle, "kit", contentCreatedAt, dashboard_url);
                     addLink(missionId, contentId);
-                    const arrayQuestions = arrayContents[i].kit.questions;
+                    const arrayQuestions = arrayContents[i].tool.questions;
                     for (let j = 0; j < arrayQuestions.length; j++) {
                         const questionId = arrayQuestions[j].id;
                         const questionId_graph = `${questionId}.${contentId}`;
@@ -136,7 +138,7 @@ function drawProject(projectId, s_mode) {
                     }
 
                     getCommentsGroupedByQuestionReport(access_token, contentId).then(question_report => {
-                        const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/mission/${missionId}/content/${contentId}`
+                        const dashboard_url = `https://app.strateegia.digital/dashboard/project/${projectId}/map/${missionId}/divergence-point/${contentId}`
                         console.log("getCommentsGroupedByQuestionReport()");
                         console.log(question_report);
                         for (let k = 0; k < question_report.length; k++) {
@@ -330,9 +332,9 @@ function applyFilters(inputData) {
     }
     // console.log(node_ids);
     filteredData.links = inputData.links.filter(d => {
-        // console.log(d);
-        return (nodeIDs.includes(d.source) && nodeIDs.includes(d.target)) ||
-            (nodeIDs.includes(d.source.id) && nodeIDs.includes(d.target.id));
+        console.log(d);
+        return (nodeIDs.includes(d.source) && nodeIDs.includes(d.target)) || 
+        (nodeIDs.includes(d.source.id) && nodeIDs.includes(d.target.id));
     });
     fData = filteredData;
     return filteredData;
